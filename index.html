@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<meta charset="UTF-8">
+	<title>CSVファイルを読み込む</title>
+	<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+</head>
+<body>
+	<h1>CSVファイルを読み込む</h1>
+	<table id="myTable">
+		<thead>
+			<tr>
+				<th>項目1</th>
+				<th>項目2</th>
+				<th>項目3</th>
+				<th>選択</th>
+			</tr>
+		</thead>
+		<tbody></tbody>
+	</table>
+
+	<script type="text/javascript">
+		$(document).ready(function() {
+			$.ajax({
+				type: "GET",
+				url: "data.csv",
+				dataType: "text",
+				success: function(data) {
+					var rows = data.split(/\r?\n|\r/);
+					var table = $("#myTable tbody");
+					for (var i = 0; i < rows.length; i++) {
+						var cells = rows[i].split(",");
+						if (cells.length > 1) {
+							var row = $("<tr></tr>");
+							for (var j = 0; j < cells.length; j++) {
+								var cell = $("<td></td>");
+								cell.text(cells[j]);
+								row.append(cell);
+							}
+							var checkbox = $("<td><input type='checkbox' name='selected' value='" + i + "'></td>");
+							row.append(checkbox);
+							table.append(row);
+						}
+					}
+				}
+			});
+		});
+	</script>
+</body>
+</html>
