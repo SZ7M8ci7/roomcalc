@@ -96,6 +96,7 @@ $(document).ready(function() {
                 "autoWidth": false,
 				"columnDefs": [
 					{ "targets": [1, 5, 6, 7, 8, 9, 10, 11], "className": "hidden" },
+					{ "orderable": false, "targets": 0 }
 				]				
             });
             for (var i = 0; i < lines.length; i++) {
@@ -172,12 +173,23 @@ function chooseRandomElements(arr, num) {
 	}
 	return result;
   }
-
-
+function dummyTask() {
+return new Promise(resolve => {
+	setTimeout(() => {
+		const result = dummyfunction();
+		resolve(result);
+	}, 1);
+	});
+}
+function dummyfunction() {
+	return 0;
+}
+		
 async function calcstart(){
 	const messageSpan = document.getElementById("processing");
 	let trynum = parseInt(document.getElementById("trynum").value)
 	messageSpan.innerHTML = "0/"+trynum+" 処理中...";
+	await dummyTask();
 	let maxComfort = -Infinity;
 	let maxResult;
 	for (let i = 0; i < trynum; i++) {
