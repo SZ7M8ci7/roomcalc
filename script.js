@@ -334,8 +334,14 @@ function cost(data_list, room_rank) {
 		series_point += sb.get(series_nums[key]);
 	}
 	let penalty = Math.max(0, 10 - (max_furniture_num.get(room_rank) - data_list.length));
-	if (wall_area > max_wall_num.get(room_rank)||floor_area > max_floor_num.get(room_rank)||place_area > max_floor_num.get(room_rank)) {
-		base_point -= 9999;
+	if (wall_area > max_wall_num.get(room_rank)) {
+		base_point -= 9999*(wall_area-max_wall_num.get(room_rank));
+	}
+	if (floor_area > max_floor_num.get(room_rank)) {
+		base_point -= 9999*(floor_area-max_floor_num.get(room_rank));
+	}
+	if (place_area > max_floor_num.get(room_rank)) {
+		base_point -= 9999*(place_area-max_floor_num.get(room_rank));
 	}
 	return base_point + theme_point + dom_point + series_point - penalty * (penalty + 2) + dormitory_point;
 }
@@ -377,14 +383,12 @@ function simulatedAnnealing(selected_data,room_rank) {
 
 		// 新しい解のコストを計算
 		let newCost = cost(newSolution,room_rank);
-		// console.log(newCost)
 		// 受理確率を計算
 		let acceptanceProbability = calculateAcceptanceProbability(
 			currentCost,
 			newCost,
 			temperature
 		);
-
 		// 受理する場合は新しい解を採用
 		if (acceptanceProbability > Math.random()) {
 			currentSolution = newSolution.slice();
