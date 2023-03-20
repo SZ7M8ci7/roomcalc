@@ -1,8 +1,17 @@
 <!DOCTYPE html>
 <html>
 <head>
+	<!-- Google tag (gtag.js) -->
+	<script async src="https://www.googletagmanager.com/gtag/js?id=G-LL7JVKT1C1"></script>
+	<script>
+	window.dataLayer = window.dataLayer || [];
+	function gtag(){dataLayer.push(arguments);}
+	gtag('js', new Date());
+
+	gtag('config', 'G-LL7JVKT1C1');
+	</script>
 	<meta charset="UTF-8">
-	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<!-- <meta name="viewport" content="width=device-width, initial-scale=1.0"> -->
 	<title>いごこち度検討ツール</title>
 	<link rel="stylesheet" type="text/css" href="https://cdn.datatables.net/1.10.19/css/jquery.dataTables.css">
 	<link rel="stylesheet" type="text/css" href="style.css">
@@ -13,7 +22,7 @@
 </head>
 <body>
 	<h1>いごこち度検討ツール</h1>
-	<button onclick="calcstart()" class="my-button1">計算開始</button>
+	<button onclick="calcstart();gtag('event', 'click', {'event_category': '計算実行','event_label': '実行','value': '1'});" class="my-button1">計算開始</button>
 	<span id="processing"></span>
 	<span id="selectedComfort"></span>
 	<div class="bottom">
