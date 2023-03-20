@@ -2,49 +2,135 @@
 <html>
 <head>
 	<meta charset="UTF-8">
-	<title>CSVファイルを読み込む</title>
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<title>いごこち度検討ツール</title>
+	<link rel="stylesheet" type="text/css" href="https://cdn.datatables.net/1.10.19/css/jquery.dataTables.css">
+	<link rel="stylesheet" type="text/css" href="style.css">
 	<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+	<script type="text/javascript" src="https://cdn.datatables.net/1.10.19/js/jquery.dataTables.js"></script>
+	<link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.15.1/css/all.css">
+	<script src="script.js"></script>
 </head>
 <body>
-	<h1>CSVファイルを読み込む</h1>
-	<table id="myTable">
-		<thead>
-			<tr>
-				<th>項目1</th>
-				<th>項目2</th>
-				<th>項目3</th>
-				<th>選択</th>
-			</tr>
-		</thead>
-		<tbody></tbody>
-	</table>
-
-	<script type="text/javascript">
-		$(document).ready(function() {
-			$.ajax({
-				type: "GET",
-				url: "data.csv",
-				dataType: "text",
-				success: function(data) {
-					var rows = data.split(/\r?\n|\r/);
-					var table = $("#myTable tbody");
-					for (var i = 0; i < rows.length; i++) {
-						var cells = rows[i].split(",");
-						if (cells.length > 1) {
-							var row = $("<tr></tr>");
-							for (var j = 0; j < cells.length; j++) {
-								var cell = $("<td></td>");
-								cell.text(cells[j]);
-								row.append(cell);
-							}
-							var checkbox = $("<td><input type='checkbox' name='selected' value='" + i + "'></td>");
-							row.append(checkbox);
-							table.append(row);
-						}
-					}
-				}
-			});
-		});
-	</script>
+	<h1>いごこち度検討ツール</h1>
+	<button onclick="calcstart()" class="my-button1">計算開始</button>
+	<span id="processing"></span>
+	<span id="selectedComfort"></span>
+	<div class="bottom">
+	<div>
+		<div class="tab active" data-tab="tab1">家具選択</div>
+		<div class="tab" data-tab="tab2">明細情報</div>
+		<div class="tab" data-tab="tab3">テキスト入力</div>
+		<div class="tab" data-tab="tab4">計算設定</div>
+		<div class="tab" data-tab="tab5">使い方・免責事項等</div>
+	</div>	
+	<div>
+		<div class="tabContent active" data-tab="tab1Content">
+			<div class="marginmid">
+			<table id="myTable" class="data-table">
+				<button id="checkcache" onclick="saveCheckboxState()">チェック状況をキャッシュに保存</button>
+				<thead>
+					<tr>
+						<th>全選択</th>
+						<th>No</th>
+						<th>名称</th>
+						<th>レア</th>
+						<th>分類</th>
+						<th>項目5</th>
+						<th>項目6</th>
+						<th>項目7</th>
+						<th>項目8</th>
+						<th>項目9</th>
+						<th>項目10</th>
+						<th>項目11</th>
+						<th>テーマ１</th>
+						<th>テーマ２</th>
+						<th>寮</th>
+						<th>シリーズ</th>
+					</tr>
+				</thead>
+				<tbody></tbody>
+			</table>
+			</div>
+		</div>
+		<div class="tabContent" data-tab="tab2Content">
+			<div class="marginmid">
+				<div id="selectedRows"></div>
+			</div>
+		</div>
+		<div class="tabContent" data-tab="tab3Content">
+			<div class="marginmid">
+			<button id="btn-check">チェックボックスをオンにする</button><br>
+			<textarea id="text-area" rows="10" cols="50"></textarea>
+			</div>
+		</div>
+		<div class="tabContent" data-tab="tab4Content">
+			<div class="marginmid">
+				<div>
+					<label for="rankInput">ルームランク:</label>
+					<input type="number" id="rankInput" name="rankInput" min="2" max="100" value="30">
+				</div>
+				<div>
+					<form>
+						<label >処理タイプ:</label>
+						<label>
+							<input type="radio" name="proctype" value="0">速さ重視
+						</label>
+						<label>
+							<input type="radio" name="proctype" value="1" checked>バランス
+						</label>
+						<label>
+							<input type="radio" name="proctype" value="2">処理回数重視
+						</label>
+					</form>
+				</div>
+				<div>
+					<label for="trynum">試行パターン数:</label>
+					<input type="number" id="trynum" name="trynum" min="1" max="10000" value="1">
+				</div>
+			</div>
+		</div>
+		<div class="tabContent" data-tab="tab5Content">
+			<div class="marginmid">
+				<h3>概要</h3>
+				<p>選択された家具をもとに、出来るだけ高いいごこち度を達成するように頑張って計算してくれます。<br>
+				試行には焼きなまし法と呼ばれる乱数を用いたヒューリスティックな手法を用いております。<br>
+				そのため完全な最適解を常に算出してくれるわけではないですが、それに近い値をそれなりに速く算出してくれます。<br>
+				また、乱数を用いているため実行毎に結果がかわります。<br>
+				何度か実行して頂ければ、どの程度のいごこち度が達成可能なのかの目安になると思います。<br>
+				処理はローカル（現在あなたがこの画面を閲覧している端末）のJavascript内で完結しているため、<br>
+				サーバーへの負荷などはありませんので、気にせず好きなだけ計算してください。<br>
+				逆に言うと、あなたの端末の性能次第で処理時間は多少前後すると思います。</p>
+				<h3>家具選択</h3>
+				<p>所持、あるいは考慮対象に入れたい家具にチェックを付けてください。<br>
+				その後計算開始ボタンを押すと計算が開始されます。<br>
+				チェック内容をキャッシュに保存した場合、次回このページを開いた際にチェック状況が復元されます。</p>
+				<h3>明細情報</h3>
+				<p>計算終了後、算出したいごこち度に対する家具の一覧が出力されます。<br>
+				コピーボタンを押すとクリップボードにコピーされます。</p>
+				<h3>テキスト入力</h3>
+				<p>1行につき1家具を入力後ボタンを押すと、対象の家具選択のチェックがオンになります。<br>
+				表記揺れ、誤字などでマッチングしなかった家具のみ入力欄に残るため、<br>
+				残ったものは手作業でチェックしてください。</p>
+				<h3>計算設定</h3>
+				<p>処理タイプは1パターンに対する処理回数を決定します。<br>
+				処理回数を上げ過ぎてもあまり意味はないため、<br>
+				速さ重視＋パターン多めか、バランス＋パターン少な目がお勧めです。</p>
+				<h3>免責事項など</h3>
+				<p>表示されるゲーム情報はすべてディズニー及びアニプレックスに帰属します。　©Disney.  Published by Aniplex<br>
+				計算に利用しているデータは織己さん（<a href="https://twitter.com/shiki_phe">@shiki_phe</a>）のいごこち度計算機をもとに作成しております。<br>
+				それに従い、本ツールで提供されるデータに関して、CC BY-NC-SA 4.0 のライセンスの下で提供します。<br>
+				<a href="https://docs.google.com/spreadsheets/d/1YO8Wr1lkPliFoMRa9IGZzaJ5NHwN_fBXtFnW_s2MiBs/edit#gid=1007401248">いごこち度計算機</a><br>
+				<a href="https://creativecommons.org/licenses/by-nc-sa/4.0/deed.ja">クリエイティブ・コモンズ・ライセンス</a><br>
+				本ツールの出力結果について、作者はいかなる保証を行いません。自己責任にて使用、検討をお願いします。<br>
+				実際に家具を製作して部屋を作る際は、よく確認することをお勧めします。<br>
+				本ツールで不具合などがある場合、作者へ連絡いただけると有難いです。<br>
+				作者のTwitter：あきた（<a href="https://twitter.com/____akita">@____akita）</a><br>
+				</p>
+					
+			</div>
+		</div>
+	</div>
+	<button class="scroll-to-top">最上部に戻る</button>
 </body>
 </html>
