@@ -178,7 +178,7 @@ return new Promise(resolve => {
 	setTimeout(() => {
 		const result = dummyfunction();
 		resolve(result);
-	}, 1);
+	}, 10);
 	});
 }
 function dummyfunction() {
