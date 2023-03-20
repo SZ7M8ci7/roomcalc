@@ -133,6 +133,10 @@ textarea {
 	margin-top: 2px;
 	margin-bottom: 2px;
   }
+  .settings{
+	padding-top: 10px;
+	padding-bottom: 10px;
+  }
       /* ボタンのスタイル */
 	  .scroll-to-top {
 		display: none;
