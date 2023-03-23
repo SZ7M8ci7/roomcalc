@@ -15,13 +15,22 @@ let selected_floor = new Set();
 let selected_front_top = new Set();
 let selected_front_bot = new Set();
 let selected_other = new Set();
+let must_wall = new Set();
+let must_floor = new Set();
+let must_front_top = new Set();
+let must_front_bot = new Set();
+let must_other = new Set();
 let selected_wall_list = [];
 let selected_floor_list = [];
 let selected_front_top_list = [];
 let selected_front_bot_list = [];
 let selected_other_list = [];
-let clipboard = null;
-let btns = null;
+let must_wall_list = [];
+let must_floor_list = [];
+let must_front_top_list = [];
+let must_front_bot_list = [];
+let must_other_list = [];
+
 
 $(document).ready(function() {
 
@@ -95,8 +104,8 @@ $(document).ready(function() {
                 "info": true,
                 "autoWidth": false,
 				"columnDefs": [
-					{ "targets": [1, 5, 6, 7, 8, 9, 10, 11], "className": "hidden" },
-					{ "orderable": false, "targets": 0 }
+					{ "targets": [2, 6, 7, 8, 9, 10, 11, 12], "className": "hidden" },
+					{ "orderable": false, "targets": [0,1] }
 				]				
             });
             for (var i = 0; i < lines.length; i++) {
@@ -104,6 +113,8 @@ $(document).ready(function() {
                     var row_data = lines[i].split(",");
 					furnitures.push(row_data)
                     var checkbox = "<td><input type='checkbox' id = '" + row_data[1] + "' name='select[]' class='check' value='" + i + "'></td>";
+                    var mustcheckbox = "<td><input type='checkbox' id = 'must" + row_data[1] + "' name='mustselect[]' class='check' value='" + i + "'></td>";
+                    row_data.unshift(mustcheckbox);
                     row_data.unshift(checkbox);
                     table.row.add(row_data);
                     // 選択された行の状態を保存する
@@ -114,12 +125,12 @@ $(document).ready(function() {
             }
 			for (let i = 0; i < furnitures.length; i++) {
 				let data = furnitures[i];
-				if (data[4] === "内観・外観：壁紙") {
+				if (data[5] === "内観・外観：壁紙") {
 				  wall.add(i);
-				} else if (data[4] === "内観・外観：床") {
+				} else if (data[5] === "内観・外観：床") {
 				  floor.add(i);
-				} else if (data[4] === "内観・外観：前景") {
-					if (data[2].includes("（上）")) {
+				} else if (data[5] === "内観・外観：前景") {
+					if (data[3].includes("（上）")) {
 						front_top.add(i);
 					} else {
 						front_bot.add(i);
@@ -210,7 +221,7 @@ async function calcstart(){
 	let copy_txt = '';
 	let ret1 = [];
 	for (let cur of ret[1]){
-		ret1.push(furnitures[cur][2]);
+		ret1.push(furnitures[cur][3]);
 	}
 	ret1.sort();
 	for (let cur of ret1){
@@ -267,25 +278,51 @@ function displaySelected() {
 	selected_front_top_list = [];
 	selected_front_bot_list = [];
 	selected_other_list = [];
-    // search欄の値を空にすることでテーブルを全件表示する
-    table.search('').draw();
+	must_wall = new Set();
+	must_floor = new Set();
+	must_front_top = new Set();
+	must_front_bot = new Set();
+	must_other = new Set();
+	must_wall_list = [];
+	must_floor_list = [];
+	must_front_top_list = [];
+	must_front_bot_list = [];
+	must_other_list = [];
+	   
+    table.search('').draw(); // search欄の値を空にすることでテーブルを全件表示する
     var selectedRows = $('input.check:checked').parents('tr');
 
 	var selectedData = []; // 選択された行のデータを格納するリストを初期化する
+	var mustData = []
     selectedRows.each(function () {
-        var rowData = $(this).find('td').map(function() {
-            return $(this).text();
-        }).get();
-		var no = parseInt(rowData[1]);
-		if (wall.has(no)){selected_wall.add(no);}
-		if (floor.has(no)){selected_floor.add(no);}
-		if (front_top.has(no)){selected_front_top.add(no);}
-		if (front_bot.has(no)){selected_front_bot.add(no);}
-		if (other.has(no)){selected_other.add(no);}
-        selectedData.push(no); // リストに行のデータを追加する
+        var rowData = [];
+		$(this).find('td').each(function () {
+			if ($(this).index() == 1) {
+				rowData.push($(this).find('input[type="checkbox"]').prop('checked'));
+			} else {
+				rowData.push($(this).text());
+			}
+		});
+		var no = parseInt(rowData[2]);
+		if (rowData[1]){
+			mustData.push(no);
+			if (wall.has(no)){must_wall.add(no);}
+			if (floor.has(no)){must_floor.add(no);}
+			if (front_top.has(no)){must_front_top.add(no);}
+			if (front_bot.has(no)){must_front_bot.add(no);}
+			if (other.has(no)){must_other.add(no);}        
+		}
+		else {
+			selectedData.push(no); // リストに行のデータを追加する
+			if (wall.has(no)){selected_wall.add(no);}
+			if (floor.has(no)){selected_floor.add(no);}
+			if (front_top.has(no)){selected_front_top.add(no);}
+			if (front_bot.has(no)){selected_front_bot.add(no);}
+			if (other.has(no)){selected_other.add(no);}        
+			}
     });
 	var room_rank = parseInt(document.getElementById('rankInput').value);
-	let ret = simulatedAnnealing(selectedData, room_rank);
+	let ret = simulatedAnnealing(selectedData, mustData, room_rank);
 	return ret;
 }
   
@@ -304,15 +341,15 @@ function cost(data_list, room_rank) {
 	for (let i = 0; i < data_list.length; i++) {
 		let num = data_list[i];
 		let data = furnitures[num];
-		place_area += parseInt(data[5]);
-		floor_area += parseInt(data[6]);
-		wall_area += parseInt(data[7]);
-		base_point += parseFloat(data[8]);
-		dormitory_point += parseFloat(data[9]);
-		themes_nums[data[12]] = (themes_nums[data[12]] || 0) + 1;
+		place_area += parseInt(data[6]);
+		floor_area += parseInt(data[7]);
+		wall_area += parseInt(data[8]);
+		base_point += parseFloat(data[9]);
+		dormitory_point += parseFloat(data[10]);
 		themes_nums[data[13]] = (themes_nums[data[13]] || 0) + 1;
-		dormitory_nums[data[14]] = (dormitory_nums[data[14]] || 0) + 1;
-		series_nums[data[15]] = (series_nums[data[15]] || 0) + 1;
+		themes_nums[data[14]] = (themes_nums[data[14]] || 0) + 1;
+		dormitory_nums[data[15]] = (dormitory_nums[data[15]] || 0) + 1;
+		series_nums[data[16]] = (series_nums[data[16]] || 0) + 1;
 	}
 	for (let key in themes_nums) {
 		if (key === "－") {
@@ -346,7 +383,7 @@ function cost(data_list, room_rank) {
 	return base_point + theme_point + dom_point + series_point - penalty * (penalty + 2) + dormitory_point;
 }
   // 焼きなまし法
-function simulatedAnnealing(selected_data,room_rank) {
+function simulatedAnnealing(selected_data,must_data,room_rank) {
 	const selectedproctype = document.querySelector('input[name="proctype"]:checked');
 	const proc_dict = {
 		0: 0.999,
@@ -365,13 +402,17 @@ function simulatedAnnealing(selected_data,room_rank) {
 	selected_front_top_list = Array.from(selected_front_top);
 	selected_front_bot_list = Array.from(selected_front_bot);
 	selected_other_list = Array.from(selected_other);
-
+	must_wall_list = Array.from(must_wall);
+	must_floor_list = Array.from(must_floor);
+	must_front_top_list = Array.from(must_front_top);
+	must_front_bot_list = Array.from(must_front_bot);
+	must_other_list = Array.from(must_other);
 	const initialTemperature = 10000; // 初期温度
 	const finalTemperature = 0.1; // 終了温度
 	coolingRate = proc_dict[coolingRate]; // 冷却率
-	let currentSolution = initializeSolution(room_rank); // 解の初期化
+	let currentSolution = initializeSolution(must_data,room_rank); // 解の初期化
 
-	let currentCost = cost(currentSolution,room_rank);
+	let currentCost = cost(must_data.concat(currentSolution),room_rank);
 	let bestSolution = currentSolution.slice(); // 最適解
 	let bestCost = currentCost;
 
@@ -382,7 +423,7 @@ function simulatedAnnealing(selected_data,room_rank) {
 		let newSolution = generateNewSolution(currentSolution);
 
 		// 新しい解のコストを計算
-		let newCost = cost(newSolution,room_rank);
+		let newCost = cost(must_data.concat(newSolution),room_rank);
 		// 受理確率を計算
 		let acceptanceProbability = calculateAcceptanceProbability(
 			currentCost,
@@ -404,18 +445,18 @@ function simulatedAnnealing(selected_data,room_rank) {
 		// 温度を下げる
 		temperature *= coolingRate;
 	}
-	cost(bestSolution);
-	return [bestCost,bestSolution];
+
+	return [bestCost,bestSolution.concat(must_data)];
 }
 
 // 初期解の生成
-function initializeSolution(room_rank) {
+function initializeSolution(must_data,room_rank) {
 	var max_furniture = max_furniture_num.get(room_rank)
-	var ret = chooseRandomElements(selected_floor,1).concat(
-		chooseRandomElements(selected_wall,1)
-		,chooseRandomElements(selected_front_top,2)
-		,chooseRandomElements(selected_front_bot,2));
-	ret = ret.concat(chooseRandomElements(selected_other,max_furniture-ret.length));
+	var ret = chooseRandomElements(selected_floor,1-must_floor_list.length).concat(
+		chooseRandomElements(selected_wall,1-must_wall_list.length)
+		,chooseRandomElements(selected_front_top,2-must_front_top_list.length)
+		,chooseRandomElements(selected_front_bot,2-must_front_bot_list.length));
+	ret = ret.concat(chooseRandomElements(selected_other,max_furniture-ret.length-must_data.length));
 	return ret;
 }
 
@@ -440,6 +481,7 @@ function generateNewSolution(currentSolution) {
 		arr1 = selected_other_list;
 	}
 	const diffArray = arr1.filter(x => !arr2.includes(x));
+	if (diffArray.length == 0){return next_solution}
 	add_index = Math.floor(Math.random() * diffArray.length); // ランダムなインデックスを取得
 	add_item = diffArray[add_index]; // ランダムに選択された要素を取得
 	next_solution.push(add_item);
@@ -486,7 +528,12 @@ function saveCheckboxState() {
 	// キャッシュからチェックボックスの状態を取得して復元
 	const checkboxes = document.querySelectorAll('input[type="checkbox"]');
 	for (let i = 0; i < checkboxes.length; i++) {
-	  checkboxes[i].checked = (localStorage.getItem(checkboxes[i].id) === 'true');
+	  let cid = checkboxes[i].id;
+	  cid = cid.replace('二人掛けソファ','二人掛けのソファ');
+	  cid = cid.replace('体育館の前景','体育館の全景');
+	  cid = cid.replace('ベーシックな','ベーシックなな');
+	  cid = cid.replace('オンボロ風の小さい机','オンボロ風の小さな机');
+	  checkboxes[i].checked = (localStorage.getItem(cid) === 'true' || localStorage.getItem(checkboxes[i].id) === 'true');
 	}
   }
   window.onload = function() {
