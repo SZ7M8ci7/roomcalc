@@ -10,6 +10,7 @@ let floor = new Set();
 let front_top = new Set();
 let front_bot = new Set();
 let other = new Set();
+let frame = new Set();
 let selected_wall = new Set();
 let selected_floor = new Set();
 let selected_front_top = new Set();
@@ -130,7 +131,10 @@ $(document).ready(function() {
 				} else if (data[5] === "内観・外観：床") {
 				  floor.add(i);
 				} else if (data[5] === "内観・外観：前景") {
-					if (data[3].includes("（上）")) {
+					if (data[3].includes("フレーム")) {
+						frame.add(i);
+						other.add(i);
+					} else if (data[3].includes("（上）")) {
 						front_top.add(i);
 					} else {
 						front_bot.add(i);
@@ -380,6 +384,7 @@ function cost(data_list, room_rank) {
 	if (place_area > max_floor_num.get(room_rank)) {
 		base_point -= 9999*(place_area-max_floor_num.get(room_rank));
 	}
+	if (data_list.filter(element => frame.has(element)).length > 1){base_point -= 9999};
 	return base_point + theme_point + dom_point + series_point - penalty * (penalty + 2) + dormitory_point;
 }
   // 焼きなまし法
