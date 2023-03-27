@@ -1,34 +1,3 @@
-Skip to content
-Search or jump to…
-Pull requests
-Issues
-Codespaces
-Marketplace
-Explore
- 
-@SZ7M8ci7 
-SZ7M8ci7
-/
-test
-Public
-Cannot fork because you own this repository and are not a member of any organizations.
-Code
-Issues
-Pull requests
-Actions
-Projects
-Wiki
-Security
-Insights
-Settings
-test/.github/workflows/python-app.yml
-@SZ7M8ci7
-SZ7M8ci7 Update python-app.yml
-Latest commit 9b2e46d 24 minutes ago
- History
- 1 contributor
-50 lines (46 sloc)  1.58 KB
-
 # This workflow will install Python dependencies, run tests and lint with a single version of Python
 # For more information see: https://docs.github.com/en/actions/automating-builds-and-tests/building-and-testing-python
 
@@ -36,7 +5,7 @@ name: Python application
 
 on:
   schedule:
-    - cron: '15 8 * * *' # 定期実行したい時刻を cron 形式で指定
+    - cron: '40 * * * *' # 定期実行したい時刻を cron 形式で指定
 
 jobs:
   build:
@@ -79,5 +48,3 @@ jobs:
           git add -u
           git diff-index --quiet HEAD || git commit -m "Update CSV file"
           git push
-test/python-app.yml at main · SZ7M8ci7/test
-1
