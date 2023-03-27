@@ -42,7 +42,7 @@ with open('data.csv', mode='w', encoding='UTF-8') as file:
             continue
         if row[1] == '' or row[1] == '名前':
             continue
-        line = ','.join([str(count)]+row[1:15]) + '\n'
+        line = ','.join([str(count)]+row[1:15]) + '\r\n'
         file.write(line)
         count+=1
 
@@ -60,7 +60,7 @@ with open('series.csv', mode='w', encoding='UTF-8') as file:
         if count <= 21:
             continue
         if 'シリーズ' in row[73]:
-            line = ','.join(row[73:73+17]) + '\n'
+            line = ','.join(row[73:73+17]) + '\r\n'
             file.write(line)
 
 with open('roomrank.csv', mode='w', encoding='UTF-8') as file:
@@ -70,5 +70,5 @@ with open('roomrank.csv', mode='w', encoding='UTF-8') as file:
         if count <= 21:
             continue
         if row[63].isdigit():
-            line = ','.join(row[63:63+6]) + '\n'
+            line = ','.join(row[63:63+6]) + '\r\n'
             file.write(line)
