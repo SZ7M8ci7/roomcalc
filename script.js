@@ -348,8 +348,8 @@ function cost(data_list, room_rank) {
 		place_area += parseInt(data[6]) ? parseInt(data[6]) : 0;
 		floor_area += parseInt(data[7]) ? parseInt(data[7]) : 0;
 		wall_area += parseInt(data[8]) ? parseInt(data[8]) : 0;
-		base_point += parseFloat(data[9]);
-		dormitory_point += parseFloat(data[10]);
+		base_point += parseFloat(data[9]) ? parseFloat(data[9]) : 0;
+		dormitory_point += parseFloat(data[10]) ? parseFloat(data[10]) : 0;
 		themes_nums[data[13]] = (themes_nums[data[13]] || 0) + 1;
 		themes_nums[data[14]] = (themes_nums[data[14]] || 0) + 1;
 		dormitory_nums[data[15]] = (dormitory_nums[data[15]] || 0) + 1;
