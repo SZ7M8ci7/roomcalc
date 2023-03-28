@@ -345,9 +345,9 @@ function cost(data_list, room_rank) {
 	for (let i = 0; i < data_list.length; i++) {
 		let num = data_list[i];
 		let data = furnitures[num];
-		place_area += parseInt(data[6]);
-		floor_area += parseInt(data[7]);
-		wall_area += parseInt(data[8]);
+		place_area += parseInt(data[6]) ?? 0;
+		floor_area += parseInt(data[7]) ?? 0;
+		wall_area += parseInt(data[8]) ?? 0;
 		base_point += parseFloat(data[9]);
 		dormitory_point += parseFloat(data[10]);
 		themes_nums[data[13]] = (themes_nums[data[13]] || 0) + 1;
