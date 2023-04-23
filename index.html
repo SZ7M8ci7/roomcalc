@@ -31,7 +31,8 @@
 		<div class="tab" data-tab="tab2">明細情報</div>
 		<div class="tab" data-tab="tab3">テキスト入力</div>
 		<div class="tab" data-tab="tab4">計算設定</div>
-		<div class="tab" data-tab="tab5">使い方等</div>
+		<div class="tab" data-tab="tab5">状態操作</div>
+		<div class="tab" data-tab="tab6">使い方等</div>
 	</div>	
 	<div>
 		<div class="tabContent active" data-tab="tab1Content">
@@ -98,9 +99,21 @@
 					<label for="trynum">試行パターン数:</label>
 					<input type="number" id="trynum" name="trynum" min="1" max="10000" value="1">
 				</div>
+				<div class="settings">
+					<label for="seed">シード値:</label>
+					<input type="number" id="seed" name="seed" min="-1" max="100000" value="-1">
+				</div>
 			</div>
 		</div>
 		<div class="tabContent" data-tab="tab5Content">
+			<div class="marginmid">
+				<button id="btn-stats-out">状態出力</button>
+				<button id="btn-stats-save">状態復元</button>
+				<button id="copyButton_stats"><i class="fas fa-clipboard">コピー</i><div id="balloonContainer"/></button><br>
+				<textarea id="text-stats" rows="10" cols="50"></textarea>
+			</div>
+		</div>
+		<div class="tabContent" data-tab="tab6Content">
 			<div class="marginmid">
 				<h3>概要</h3>
 				<p>選択された家具をもとに、出来るだけ高いいごこち度を達成するように頑張って計算してくれます。<br>
@@ -108,11 +121,9 @@
 				そのため完全な最適解を常に算出してくれるわけではないですが、それに近い値をそれなりに速く算出してくれます。<br>
 				また、乱数を用いているため実行毎に結果がかわります。<br>
 				何度か実行して頂ければ、どの程度のいごこち度が達成可能なのかの目安になると思います。<br>
-				処理はローカル（現在あなたがこの画面を閲覧している端末）のJavascript内で完結しているため、<br>
+				処理はローカル（あなたがこの画面を閲覧している端末）のJavascript内で完結しているため、<br>
 				サーバーへの負荷などはありませんので、気にせず好きなだけ計算してください。<br>
 				逆に言うと、あなたの端末の性能次第で処理時間は多少前後すると思います。<br>
-				いごこち度がマイナスの値しか出力されない場合、何らかの制約に違反する部屋しか検討できていません。<br>
-				（例：壁装飾ばかりなど） もう少し色々な家具をチェックしてみてください。</p>
 				<h3>家具選択</h3>
 				<p>所持、あるいは考慮対象に入れたい家具にチェックを付けてください。<br>
 				その後計算開始ボタンを押すと計算が開始されます。<br>
@@ -126,8 +137,13 @@
 				残ったものは手作業でチェックしてください。</p>
 				<h3>計算設定</h3>
 				<p>処理タイプは1パターンに対する処理回数を決定します。<br>
-				処理回数を上げ過ぎてもあまり意味はないため、<br>
-				速さ重視＋パターン多めか、バランス＋パターン少な目がお勧めです。</p>
+				処理回数を上げ過ぎてもあまり意味はないため、速さ重視＋パターン多めか、バランス＋パターン少な目がお勧めです。<br>
+				シード値は-1以外の値を設定すると乱数を固定します。通常は-1のまま変える必要はありません。</p>
+				<h3>状態操作</h3>
+				<p>他のデバイスへの選択状況の移行や、不具合発生時の作者への連絡に使用します。<br>
+				状態出力を押すと現在の選択状況、設定が出力されます。<br>
+				他のデバイスへ移行する際はそれをコピーし、他のデバイスで貼り付け後状態復元を押すと状況が復元されます。<br>
+				不具合発生などで作者へ連絡して頂ける際は、そのまま貼り付けてDMなどで頂けるとスムーズに検証が可能になります。</p>
 				<h3>免責事項など</h3>
 				<p>表示されるゲーム情報はすべてディズニー及びアニプレックスに帰属します。　©Disney.  Published by Aniplex<br>
 				計算に利用しているデータは織己さん（<a href="https://twitter.com/shiki_phe">@shiki_phe</a>）のいごこち度計算機をもとに作成しております。<br>
@@ -137,9 +153,8 @@
 				本ツールの出力結果について、作者はいかなる保証を行いません。自己責任にて使用、検討をお願いします。<br>
 				実際に家具を製作して部屋を作る際は、よく確認することをお勧めします。<br>
 				本ツールで不具合などがある場合、作者へ連絡いただけると有難いです。<br>
-				作者のTwitter：あきた（<a href="https://twitter.com/____akita">@____akita）</a><br>
+				作者のTwitter：あきた（<a href="https://twitter.com/____akita">@____akita</a>）<br>
 				</p>
-					
 			</div>
 		</div>
 	</div>

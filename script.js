@@ -1,3 +1,24 @@
+Math.random.seed = (function me (s) {
+	// Xorshift128 (init seed with Xorshift32)
+	s ^= s << 13; s ^= 2 >>> 17; s ^= s << 5;
+	let x = 123456789^s;
+	s ^= s << 13; s ^= 2 >>> 17; s ^= s << 5;
+	let y = 362436069^s;
+	s ^= s << 13; s ^= 2 >>> 17; s ^= s << 5;
+	let z = 521288629^s;
+	s ^= s << 13; s ^= 2 >>> 17; s ^= s << 5;
+	let w = 88675123^s;
+	let t;
+	Math.random = function () {
+		t = x ^ (x << 11);
+		x = y; y = z; z = w;
+		// >>>0 means 'cast to uint32'
+		w = ((w ^ (w >>> 19)) ^ (t ^ (t >>> 8)))>>>0;
+		return w / 0x100000000;
+	};
+	Math.random.seed = me;
+	return me;
+})(0);
 var selectedRows = {}; // 選択された行の状態を保存するためのオブジェクトを定義する
 var table = null; // 初期化
 var furnitures = [];
@@ -31,10 +52,35 @@ let must_floor_list = [];
 let must_front_top_list = [];
 let must_front_bot_list = [];
 let must_other_list = [];
+var seed = Math.floor(Math.random() * 100000);
 
 
 $(document).ready(function() {
+	const copyButton_stats = document.getElementById("copyButton_stats");
+	copyButton_stats.addEventListener("click", () => {
+        const textToCopy = $("#text-stats").val();
+        navigator.clipboard.writeText(textToCopy).then(() => {
+          const balloon = document.createElement("div");
+          balloon.className = "balloon";
+          balloon.textContent = "明細をコピーしました";
+          copyButton_stats.parentNode.appendChild(balloon);
 
+          const buttonRect = copyButton_stats.getBoundingClientRect();
+          const balloonRect = balloon.getBoundingClientRect();
+          const balloonTop =
+            buttonRect.top +
+            buttonRect.height / 2 -
+            balloonRect.height / 2;
+          const balloonLeft = buttonRect.right + 8;
+
+          balloon.style.top = `${balloonTop}px`;
+          balloon.style.left = `${balloonLeft}px`;
+
+          setTimeout(() => {
+            balloon.parentNode.removeChild(balloon);
+          }, 1000);
+        });
+      });
 	$("#btn-check").click(function(){
 		var lines = Array.from(new Set($("#text-area").val().split("\n"))); // テキストエリアの値を1行ずつ取得
 		var checkboxes = $("input[type='checkbox']"); // 全てのチェックボックスを取得
@@ -47,7 +93,68 @@ $(document).ready(function() {
 		});
 		$("#text-area").val(lines.join("\n")); // テキストエリアに残った行を再度設定する
 	});
-	
+	$("#btn-stats-out").click(function(){
+		// チェックボックスの状態を取得
+		const checkboxes = document.querySelectorAll('input[type="checkbox"]');
+		var lines = [];
+		lines.push(seed);
+		lines.push(Date.now());
+		lines.push(document.getElementById('rankInput').value);
+		lines.push(document.querySelector('input[name="proctype"]:checked').value);
+		lines.push(document.getElementById("trynum").value);
+		
+		var last_checked = null;
+		var stats_all = '';
+		$.each(checkboxes, function(index, checkbox){ // 各チェックボックスに対して処理を行う
+			var cid = $(checkbox).attr("id"); // チェックボックスの名前を取得
+			if (cid != 'select-all'){
+				if (cid.match(/must/)){
+					stats_all += (last_checked + '' + checkbox.checked).replaceAll('true','1').replaceAll('false','0');
+				}
+				last_checked = checkbox.checked;
+			}
+		});
+		lines.push(stats_all);
+		$("#text-stats").val(lines.join("\n")); // テキストエリアに設定内容を出力する
+	});	
+	$("#btn-stats-save").click(function(){
+		var lines = $("#text-stats").val().split("\n"); // テキストエリアの値を1行ずつ取得
+		$("#rankInput").val(lines[2]);
+		var radios = document.getElementsByName("proctype");
+		if (lines[3] == '0'){radios[0].checked = true;}
+		if (lines[3] == '1'){radios[1].checked = true;}
+		if (lines[3] == '2'){radios[2].checked = true;}
+		$("#trynum").val(lines[4]);
+		var checkboxes = $("input[type='checkbox']"); // 全てのチェックボックスを取得
+		$.each(checkboxes, function(index, checkbox){ // 各チェックボックスに対して処理を行う
+			var check_id = $(checkbox).attr("id"); // チェックボックスの名前を取得
+			var check_value = parseInt($(checkbox).attr("value"),10);
+			if (check_id.match(/must/)){
+				$(checkbox).prop("checked", lines[5][2*check_value+1]=='1'); // チェックボックスをオンにする
+			} else {
+				$(checkbox).prop("checked", lines[5][2*check_value]=='1'); // チェックボックスをオンにする
+			}
+		});
+		const balloon = document.createElement("div");
+		balloon.className = "balloon";
+		balloon.textContent = "復元しました";
+		document.getElementById("btn-stats-save").parentNode.appendChild(balloon);
+
+		const buttonRect = document.getElementById("btn-stats-save").getBoundingClientRect();
+		const balloonRect = balloon.getBoundingClientRect();
+		const balloonTop =
+		  buttonRect.top +
+		  buttonRect.height / 2 -
+		  balloonRect.height / 2;
+		const balloonLeft = buttonRect.right + 8;
+
+		balloon.style.top = `${balloonTop}px`;
+		balloon.style.left = `${balloonLeft}px`;
+
+		setTimeout(() => {
+		  balloon.parentNode.removeChild(balloon);
+		}, 1000);
+	});	
 	$.ajax({
 		type: "GET",
 		url: "series.csv",
@@ -203,6 +310,9 @@ function dummyfunction() {
 async function calcstart(){
 	const messageSpan = document.getElementById("processing");
 	let trynum = parseInt(document.getElementById("trynum").value)
+	seed = parseInt(document.getElementById("seed").value)
+	if (seed == -1){seed = Math.floor(Math.random() * 100000);}
+	Math.random.seed(seed);
 	messageSpan.innerHTML = "0/"+trynum+" 処理中...";
 	await dummyTask();
 	let maxComfort = -Infinity;
@@ -216,7 +326,8 @@ async function calcstart(){
 	  }
 	}
 	var ret = maxResult;
-	var comfort = 'いごこち度:'+ret[0];
+	if (ret[0] < 0){var comfort = '部屋の条件を満たせませんでした。選択家具が少な過ぎたり、必須家具を過剰に選択していないか確認してください。';}
+	else {var comfort = 'いごこち度:'+ret[0];}
 	var output='<div><button id="copyButton">\
 	<i class="fas fa-clipboard">コピー</i>\
 	<div id="balloonContainer"/></button></div>\
@@ -375,15 +486,9 @@ function cost(data_list, room_rank) {
 		series_point += sb.get(series_nums[key]);
 	}
 	let penalty = Math.max(0, 10 - (max_furniture_num.get(room_rank) - data_list.length));
-	if (wall_area > max_wall_num.get(room_rank)) {
-		base_point -= 9999*(wall_area-max_wall_num.get(room_rank));
-	}
-	if (floor_area > max_floor_num.get(room_rank)) {
-		base_point -= 9999*(floor_area-max_floor_num.get(room_rank));
-	}
-	if (place_area > max_floor_num.get(room_rank)) {
-		base_point -= 9999*(place_area-max_floor_num.get(room_rank));
-	}
+	if (wall_area > max_wall_num.get(room_rank)) {base_point -= 9999*(wall_area-max_wall_num.get(room_rank));}
+	if (floor_area > max_floor_num.get(room_rank)) {base_point -= 9999*(floor_area-max_floor_num.get(room_rank));}
+	if (place_area > max_floor_num.get(room_rank)) {base_point -= 9999*(place_area-max_floor_num.get(room_rank));}
 	if (data_list.filter(element => frame.has(element)).length > 1){base_point -= 9999};
 	return base_point + theme_point + dom_point + series_point - penalty * (penalty + 2) + dormitory_point;
 }
