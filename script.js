@@ -517,8 +517,8 @@ function simulatedAnnealing(selected_data,must_data,room_rank) {
 	must_front_top_list = Array.from(must_front_top);
 	must_front_bot_list = Array.from(must_front_bot);
 	must_other_list = Array.from(must_other);
-	const initialTemperature = 10000; // 初期温度
-	const finalTemperature = 0.1; // 終了温度
+	const initialTemperature = 1000; // 初期温度
+	const finalTemperature = 0.01; // 終了温度
 	coolingRate = proc_dict[coolingRate]; // 冷却率
 	let currentSolution = initializeSolution(must_data,room_rank); // 解の初期化
 
