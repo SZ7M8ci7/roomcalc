@@ -42,7 +42,7 @@ with open('data.csv', mode='w', encoding='UTF-8') as file:
             continue
         if row[1] == '' or row[1] == '名前':
             continue
-        line = ','.join([str(count)]+row[1:15]) + '\r\n'
+        line = ','.join([str(count)]+row[1:15]+[row[41]]) + '\r\n'
         file.write(line)
         count+=1
 
