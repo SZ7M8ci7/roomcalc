@@ -1,0 +1,171 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<!-- Google tag (gtag.js) -->
+	<script async src="https://www.googletagmanager.com/gtag/js?id=G-LL7JVKT1C1"></script>
+	<script>
+	window.dataLayer = window.dataLayer || [];
+	function gtag(){dataLayer.push(arguments);}
+	gtag('js', new Date());
+
+	gtag('config', 'G-LL7JVKT1C1');
+	</script>
+	<meta charset="UTF-8">
+	<!-- <meta name="viewport" content="width=device-width, initial-scale=1.0"> -->
+	<title>招待部屋検討ツール</title>
+	<link rel="stylesheet" type="text/css" href="https://cdn.datatables.net/1.10.19/css/jquery.dataTables.css">
+	<link rel="stylesheet" type="text/css" href="style.css">
+	<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+	<script type="text/javascript" src="https://cdn.datatables.net/1.10.19/js/jquery.dataTables.js"></script>
+	<link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.15.1/css/all.css">
+	<script src="script_invite.js"></script>
+</head>
+<body>
+	<h1>招待部屋検討ツール</h1>
+	<select id="chara">
+		<option value="riddle">リドル</option>
+		<option value="ace">エース</option>
+		<option value="deuce">デュース</option>
+		<option value="trey">トレイ</option>
+		<option value="cater">ケイト</option>
+		<option value="leona">レオナ</option>
+		<option value="jack">ジャック</option>
+		<option value="ruggie">ラギー</option>
+		<option value="azul">アズール</option>
+		<option value="jade">ジェイド</option>
+		<option value="floyd">フロイド</option>
+		<option value="kalim">カリム</option>
+		<option value="jamil">ジャミル</option>
+		<option value="vil">ヴィル</option>
+		<option value="epel">エペル</option>
+		<option value="rook">ルーク</option>
+		<option value="idia">イデア</option>
+		<option value="ortho">オルト</option>
+		<option value="malleus">マレウス</option>
+		<option value="silver">シルバー</option>
+		<option value="sebek">セベク</option>
+		<option value="lilia">リリア</option>
+		<option value="grim">グリム</option>
+	</select>
+	<select id="dom_grade">
+		<option value="excellent">寮Excellent</option>
+		<option value="great">寮Great</option>
+		<option value="good">寮Good</option>
+		<option value="normal">無し</option>
+	</select>
+	<select id="theme_grade">
+		<option value="excellent">テーマExcellent</option>
+		<option value="great">テーマGreat</option>
+		<option value="good">テーマGood</option>
+		<option value="normal">無し</option>
+	</select>
+	<button onclick="calcstart();gtag('event', 'click_invite', {'event_category': '計算実行','event_label': '実行','value': '1'});" class="my-button1">計算開始</button>
+	</select>
+	<span id="processing"></span>
+	<span id="selectedComfort"></span>
+	<div class="bottom">
+	<div>
+		<div class="tab active" data-tab="tab1">家具選択</div>
+		<div class="tab" data-tab="tab2">明細情報</div>
+		<div class="tab" data-tab="tab3">計算設定</div>
+		<div class="tab" data-tab="tab4">使い方等</div>
+	</div>	
+	<div>
+		<div class="tabContent active" data-tab="tab1Content">
+			<div class="marginmid">
+			<table id="myTable" class="data-table">
+				<thead>
+					<tr>
+						<th>No</th>
+						<th>個数</th>
+						<th>名称</th>
+						<th>レア</th>
+						<th>分類</th>
+						<th>テーマ１</th>
+						<th>値</th>
+						<th>テーマ２</th>
+						<th>値</th>
+						<th>寮</th>
+						<th>値</th>
+						<th>シリーズ</th>
+						<th>設置</th>
+						<th>床</th>
+						<th>壁</th>
+					</tr>
+				</thead>
+				<tbody></tbody>
+			</table>
+			</div>
+		</div>
+		<div class="tabContent" data-tab="tab2Content">
+			<div class="marginmid">
+				<div id="selectedRows"></div>
+			</div>
+		</div>
+		<div class="tabContent" data-tab="tab3Content">
+			<div class="marginmid">
+				<div class="settings">
+					<label for="rankInput">ルームランク:</label>
+					<input type="number" id="rankInput" name="rankInput" min="2" max="100" value="30">
+				</div>
+				<div class="settings">
+					<form>
+						<label >処理タイプ:</label>
+						<label>
+							<input type="radio" name="proctype" value="0">速さ重視
+						</label>
+						<label>
+							<input type="radio" name="proctype" value="1" checked>バランス
+						</label>
+						<label>
+							<input type="radio" name="proctype" value="2">処理回数重視
+						</label>
+					</form>
+				</div>
+				<div class="settings">
+					<label for="trynum">試行パターン数:</label>
+					<input type="number" id="trynum" name="trynum" min="1" max="10000" value="1">
+				</div>
+				<div class="settings">
+					<label for="seed">シード値:</label>
+					<input type="number" id="seed" name="seed" min="-1" max="100000" value="-1">
+				</div>
+			</div>
+		</div>
+		<div class="tabContent" data-tab="tab4Content">
+			<div class="marginmid">
+				<h3>概要</h3>
+				<p>指定された家具個数をもとに、出来るだけ条件を満たす招待部屋を頑張って計算してくれます。<br>
+				試行には焼きなまし法と呼ばれる乱数を用いたヒューリスティックな手法を用いております。<br>
+				そのため完全な最適解を常に算出してくれるわけではないですが、それに近い値をそれなりに速く算出してくれます。<br>
+				また、乱数を用いているため実行毎に結果がかわります。<br>
+				何度か実行して頂ければ、どの程度の達成率が可能なのかの目安になると思います。<br>
+				処理はローカル（あなたがこの画面を閲覧している端末）のJavascript内で完結しているため、<br>
+				サーバーへの負荷などはありませんので、気にせず好きなだけ計算してください。<br>
+				逆に言うと、あなたの端末の性能次第で処理時間は多少前後すると思います。<br>
+				<h3>家具選択</h3>
+				<p>検討に使用したい個数を入力してください。その後計算開始ボタンを押すと計算が開始されます。</p>
+				<h3>明細情報</h3>
+				<p>計算終了後、算出した招待部屋に対する家具の一覧が出力されます。<br>
+				コピーボタンを押すとクリップボードにコピーされます。</p>
+				<h3>計算設定</h3>
+				<p>処理タイプは1パターンに対する処理回数を決定します。<br>
+				処理回数を上げ過ぎてもあまり意味はないため、速さ重視＋パターン多めか、バランス＋パターン少な目がお勧めです。<br>
+				シード値は-1以外の値を設定すると乱数を固定します。通常は-1のまま変える必要はありません。</p>
+				<h3>免責事項など</h3>
+				<p>表示されるゲーム情報はすべてディズニー及びアニプレックスに帰属します。　©Disney.  Published by Aniplex<br>
+				計算に利用しているデータは織己さん（<a href="https://twitter.com/shiki_phe">@shiki_phe</a>）のいごこち度計算機をもとに作成しております。<br>
+				それに従い、本ツールで提供されるデータに関して、CC BY-NC-SA 4.0 のライセンスの下で提供します。<br>
+				<a href="https://docs.google.com/spreadsheets/d/1YO8Wr1lkPliFoMRa9IGZzaJ5NHwN_fBXtFnW_s2MiBs/edit#gid=1007401248">いごこち度計算機</a><br>
+				<a href="https://creativecommons.org/licenses/by-nc-sa/4.0/deed.ja">クリエイティブ・コモンズ・ライセンス</a><br>
+				本ツールの出力結果について、作者はいかなる保証を行いません。自己責任にて使用、検討をお願いします。<br>
+				実際に家具を製作して部屋を作る際は、よく確認することをお勧めします。<br>
+				本ツールで不具合などがある場合、作者へ連絡いただけると有難いです。<br>
+				作者のTwitter：あきた（<a href="https://twitter.com/____akita">@____akita</a>）<br>
+				</p>
+			</div>
+		</div>
+	</div>
+	<button class="scroll-to-top">最上部に戻る</button>
+</body>
+</html>
