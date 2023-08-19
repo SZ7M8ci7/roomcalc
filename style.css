@@ -49,6 +49,10 @@ textarea {
 	border: 1px solid #ccc; /* 枠線の色と太さを指定 */
 	padding: 5px; /* テキストエリア内部の余白を指定 */
 }
+.set_val {
+	margin: 0px 1px 0px 15px; 
+	width: 3em;
+}
 .my-button1 {
 	background-color: #4CAF50; /* ボタンの背景色 */
 	border: none; /* ボタンの境界線を非表示にする */
@@ -162,3 +166,12 @@ textarea {
 		  right: 10px;
 		}
 	  }
+	  .have_val{
+		display: inline-block;
+		/*コレ*/width: 3em;
+		/*コレ*/max-width: 100%;
+		border: 1px solid #999;
+		box-sizing: border-box;
+		background: #ffffff;
+		/* text-align: right; */
+	}
