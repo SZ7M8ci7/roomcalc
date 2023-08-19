@@ -225,8 +225,8 @@ function dummyfunction() {
 		
 async function calcstart(){
 	const messageSpan = document.getElementById("processing");
-	let trynum = parseInt(document.getElementById("trynum").value)
-	seed = parseInt(document.getElementById("seed").value)
+	let trynum = parseInt(document.getElementById("trynum").value);
+	seed = parseInt(document.getElementById("seed").value);
 	if (seed == -1){seed = Math.floor(Math.random() * 100000);}
 	Math.random.seed(seed);
 
@@ -453,7 +453,7 @@ function cost(data_list, selected_maxval, room_rank) {
 	if (themes_val >= theme_line){
 		ret_theme = 1;
 	} else {
-		ret_theme = themes_val/theme_line
+		ret_theme = themes_val/theme_line;
 	}
 	if (wall_area > max_wall_num.get(room_rank)) {base_point *= 0.25**(wall_area - max_wall_num.get(room_rank))}
 	if (floor_area > max_floor_num.get(room_rank))  {base_point *= 0.25**(floor_area - max_floor_num.get(room_rank))}
@@ -461,7 +461,7 @@ function cost(data_list, selected_maxval, room_rank) {
 	if (data_list.filter(element => frame.has(element)).length > 1) {base_point *= 0.25}
 	for (const key of countMap.keys()) {
 		if (countMap.get(key) > selected_maxval[key]) {base_point *= 0.25**(countMap.get(key) - selected_maxval[key])}
-	  }
+	}
 	return base_point*ret_theme*ret_dom;
 }
   // 焼きなまし法
@@ -575,8 +575,63 @@ function calculateAcceptanceProbability(currentCost, newCost, temperature) {
 	return delta*temperature/1000;
 }
 
-
+function saveInputState() {
+	// 数値入力フィールドの値を取得してキャッシュに保存
+	const inputs = document.querySelectorAll('input[type="number"]');
+	for (let i = 0; i < inputs.length; i++) {
+	  localStorage.setItem(inputs[i].id, inputs[i].value);
+	}
+	const copyButton = document.getElementById("checkcache");
+	const balloon = document.createElement("div");
+	balloon.className = "balloon";
+	balloon.textContent = "保存しました";
+	copyButton.parentNode.appendChild(balloon);
+  
+	const buttonRect = copyButton.getBoundingClientRect();
+	const balloonRect = balloon.getBoundingClientRect();
+	const balloonTop =
+	  buttonRect.top +
+	  buttonRect.height / 2 -
+	  balloonRect.height / 2;
+	const balloonLeft = buttonRect.right + 8;
+  
+	balloon.style.top = `${balloonTop}px`;
+	balloon.style.left = `${balloonLeft}px`;
+  
+	setTimeout(() => {
+	  balloon.parentNode.removeChild(balloon);
+	}, 1000);
+  }
+  function setall(){
+	const filteredRows = table.rows({ filter: 'applied' }).nodes();
+	let setnum = parseInt(document.getElementById("set_val").value)
+	 // 各行に対して処理を行う
+	 $(filteredRows).each(function() {
+		const row = $(this);
+		const numCell = row.find('input[type="number"]');
+		const minValue = parseInt(numCell.attr('min'));
+		const maxValue = parseInt(numCell.attr('max'));
+		let newValue = setnum;
+		if (newValue < minValue) {
+			newValue = minValue;
+		} else if (newValue > maxValue) {
+			newValue = maxValue;
+		}
+		numCell.val(newValue);
+	  });
+  }
+  function restoreInputState() {
+	// キャッシュから数値入力フィールドの値を取得して復元
+	const inputs = document.querySelectorAll('input[type="number"]');
+	for (let i = 0; i < inputs.length; i++) {
+	  let iid = inputs[i].id;
+	  if (!(localStorage.getItem(iid)==''||localStorage.getItem(iid)==null)){
+		  inputs[i].value = localStorage.getItem(iid);
+	  }
+	}
+  }
   window.onload = function() {
+	restoreInputState();
 	// ボタンの要素を取得する
 	var button = document.querySelector('.scroll-to-top');
 	// ボタンをクリックしたら最上部にスクロールする
