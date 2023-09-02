@@ -35,7 +35,7 @@ worksheet = client.open_by_url(spreadsheet_url).worksheet(sheet_name)
 rows = worksheet.get_all_values()
 
 # 取得したデータを処理する
-with open('data_test.csv', mode='w', encoding='UTF-8') as file:
+with open('data.csv', mode='w', encoding='UTF-8') as file:
     count = 0
     for row in rows:
         if len(row) == 0:
@@ -53,7 +53,7 @@ worksheet = client.open_by_url(spreadsheet_url).worksheet(sheet_name)
 rows = worksheet.get_all_values()
 
 # 取得したデータを処理する
-with open('series_test.csv', mode='w', encoding='UTF-8') as file:
+with open('series.csv', mode='w', encoding='UTF-8') as file:
     count = 0
     for row in rows:
         count+=1
@@ -63,7 +63,7 @@ with open('series_test.csv', mode='w', encoding='UTF-8') as file:
             line = ','.join(row[92:92+17]) + '\r\n'
             file.write(line)
 
-with open('roomrank_test.csv', mode='w', encoding='UTF-8') as file:
+with open('roomrank.csv', mode='w', encoding='UTF-8') as file:
     count = 0
     for row in rows:
         count+=1
