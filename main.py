@@ -69,6 +69,6 @@ with open('roomrank_test.csv', mode='w', encoding='UTF-8') as file:
         count+=1
         if count <= 22:
             continue
-        if row[63].isdigit():
+        if row[77].isdigit():
             line = ','.join(row[77:77+6]) + '\r\n'
             file.write(line)
