@@ -437,6 +437,9 @@ function displaySelected() {
 			}
     });
 	var room_rank = parseInt(document.getElementById('rankInput').value);
+	// if (mustData.length() > max_furniture_num.get(room_rank)) {
+	// 	return [-1,-1];
+	// }
 	let ret = simulatedAnnealing(selectedData, mustData, room_rank);
 	return ret;
 }
