@@ -176,7 +176,7 @@ $(document).ready(function() {
 			  }
 
             table.draw();
-
+			restoreInputState();
         }
     });
 	const tabs = document.querySelectorAll(".tab");
@@ -631,7 +631,6 @@ function saveInputState() {
 	}
   }
   window.onload = function() {
-	restoreInputState();
 	// ボタンの要素を取得する
 	var button = document.querySelector('.scroll-to-top');
 	// ボタンをクリックしたら最上部にスクロールする
