@@ -27,7 +27,7 @@ client_credentials = {
 creds = ServiceAccountCredentials._from_parsed_json_keyfile(client_credentials, scope, None, None)
 client = gspread.authorize(creds)
 # スプレッドシートのURLとシート名を指定する
-spreadsheet_url = 'https://docs.google.com/spreadsheets/d/1oo-ZyoHcUqkOclir4QKZ_CMB6_1WNlW5LB-vf276wj8/edit?usp=sharing'
+spreadsheet_url = 'https://docs.google.com/spreadsheets/d/1VfGMEck8L2oHG5MRfNNmYw2aHi954UW85iobxJIFe6E/edit?usp=sharing'
 sheet_name = '家具データ'
 
 # スプレッドシートのデータを取得する
