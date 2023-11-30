@@ -87,7 +87,86 @@ const dom_judge = {
 }
 
 $(document).ready(function() {
+	const copyButton_stats = document.getElementById("copyButton_stats");
+	copyButton_stats.addEventListener("click", () => {
+        const textToCopy = $("#text-stats").val();
+        navigator.clipboard.writeText(textToCopy).then(() => {
+          const balloon = document.createElement("div");
+          balloon.className = "balloon";
+          balloon.textContent = "明細をコピーしました";
+          copyButton_stats.parentNode.appendChild(balloon);
 
+          const buttonRect = copyButton_stats.getBoundingClientRect();
+          const balloonRect = balloon.getBoundingClientRect();
+          const balloonTop =
+            buttonRect.top +
+            buttonRect.height / 2 -
+            balloonRect.height / 2;
+          const balloonLeft = buttonRect.right + 8;
+
+          balloon.style.top = `${balloonTop}px`;
+          balloon.style.left = `${balloonLeft}px`;
+
+          setTimeout(() => {
+            balloon.parentNode.removeChild(balloon);
+          }, 1000);
+        });
+      });
+	$("#btn-stats-out").click(function(){
+		// チェックボックスの状態を取得
+		const checkboxes = document.querySelectorAll('input[type="number"]');
+		var lines = [];
+		lines.push(seed);
+		lines.push(Date.now());
+		lines.push(document.getElementById('rankInput').value);
+		lines.push(document.querySelector('input[name="proctype"]:checked').value);
+		lines.push(document.getElementById("trynum").value);
+		lines.push(document.getElementById('chara').value);
+		lines.push(document.getElementById('dom_grade').value);
+		lines.push(document.getElementById('theme_grade').value);
+		
+		var stats_all = '';
+		$.each(checkboxes, function(index, checkbox){ // 各チェックボックスに対して処理を行う
+			stats_all += String(checkbox.value).padStart(2, '0');
+		});
+		lines.push(stats_all);
+		$("#text-stats").val(lines.join("\n")); // テキストエリアに設定内容を出力する
+	});	
+	$("#btn-stats-save").click(function(){
+		var lines = $("#text-stats").val().split("\n"); // テキストエリアの値を1行ずつ取得
+		$("#rankInput").val(lines[2]);
+		var radios = document.getElementsByName("proctype");
+		if (lines[3] == '0'){radios[0].checked = true;}
+		if (lines[3] == '1'){radios[1].checked = true;}
+		if (lines[3] == '2'){radios[2].checked = true;}
+		$("#trynum").val(lines[4]);
+		$("#chara").val(lines[5]);
+		$("#dom_grade").val(lines[6]);
+		$("#theme_grade").val(lines[7]);
+		var checkboxes = $('input[type="number"]'); // 全てのチェックボックスを取得
+		$.each(checkboxes, function(index, checkbox){ // 各チェックボックスに対して処理を行う
+			$(checkbox).val(parseInt(lines[8].substring(2*index,2*index+2)));
+		});
+		const balloon = document.createElement("div");
+		balloon.className = "balloon";
+		balloon.textContent = "復元しました";
+		document.getElementById("btn-stats-save").parentNode.appendChild(balloon);
+
+		const buttonRect = document.getElementById("btn-stats-save").getBoundingClientRect();
+		const balloonRect = balloon.getBoundingClientRect();
+		const balloonTop =
+		  buttonRect.top +
+		  buttonRect.height / 2 -
+		  balloonRect.height / 2;
+		const balloonLeft = buttonRect.right + 8;
+
+		balloon.style.top = `${balloonTop}px`;
+		balloon.style.left = `${balloonLeft}px`;
+
+		setTimeout(() => {
+		  balloon.parentNode.removeChild(balloon);
+		}, 1000);
+	});	
 	$.ajax({
 		type: "GET",
 		url: "roomrank.csv",

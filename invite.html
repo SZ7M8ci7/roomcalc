@@ -68,7 +68,8 @@
 		<div class="tab active" data-tab="tab1">家具選択</div>
 		<div class="tab" data-tab="tab2">明細情報</div>
 		<div class="tab" data-tab="tab3">計算設定</div>
-		<div class="tab" data-tab="tab4">使い方等</div>
+		<div class="tab" data-tab="tab4">状態操作</div>
+		<div class="tab" data-tab="tab5">使い方等</div>
 	</div>	
 	<div>
 		<div class="tabContent active" data-tab="tab1Content">
@@ -137,6 +138,14 @@
 		</div>
 		<div class="tabContent" data-tab="tab4Content">
 			<div class="marginmid">
+				<button id="btn-stats-out">状態出力</button>
+				<button id="btn-stats-save">状態復元</button>
+				<button id="copyButton_stats"><i class="fas fa-clipboard">コピー</i><div id="balloonContainer"/></button><br>
+				<textarea id="text-stats" rows="10" cols="50"></textarea>
+			</div>
+		</div>
+		<div class="tabContent" data-tab="tab5Content">
+			<div class="marginmid">
 				<h3>概要</h3>
 				<p>指定された家具個数をもとに、出来るだけ条件を満たす招待部屋を頑張って計算してくれます。<br>
 				試行には焼きなまし法と呼ばれる乱数を用いたヒューリスティックな手法を用いております。<br>
@@ -155,6 +164,11 @@
 				<p>処理タイプは1パターンに対する処理回数を決定します。<br>
 				処理回数を上げ過ぎてもあまり意味はないため、速さ重視＋パターン多めか、バランス＋パターン少な目がお勧めです。<br>
 				シード値は-1以外の値を設定すると乱数を固定します。通常は-1のまま変える必要はありません。</p>
+				<h3>状態操作</h3>
+				<p>他のデバイスへの選択状況の移行や、不具合発生時の作者への連絡に使用します。<br>
+				状態出力を押すと現在の選択状況、設定が出力されます。<br>
+				他のデバイスへ移行する際はそれをコピーし、他のデバイスで貼り付け後状態復元を押すと状況が復元されます。<br>
+				不具合発生などで作者へ連絡して頂ける際は、そのまま貼り付けてDMなどで頂けるとスムーズに検証が可能になります。</p>
 				<h3>免責事項など</h3>
 				<p>表示されるゲーム情報はすべてディズニー及びアニプレックスに帰属します。　©Disney.  Published by Aniplex<br>
 				計算に利用しているデータは織己さん（<a href="https://twitter.com/shiki_phe">@shiki_phe</a>）のいごこち度計算機をもとに作成しております。<br>
