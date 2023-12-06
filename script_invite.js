@@ -433,30 +433,28 @@ function displaySelected() {
 			}
 		});
 		var no = parseInt(rowData[0]);
+		if (parseInt(rowData[1]) <= 0){return true};
 		var theme_1_name = rowData[5];
 		var theme_2_name = rowData[7];
 		var domi_name = rowData[9];
 		if (theme_1 == theme_1_name || theme_1 == theme_2_name ||
 			theme_2 == theme_1_name || theme_2 == theme_2_name ||
 			dom_name == domi_name
-			){
-				if ((rowData[2].includes("写真") && rowData[2].includes(selectedValue))||!rowData[2].includes("写真")){
-					var point = 0;
-					if (theme_1 == theme_1_name){point+=parseInt(rowData[6])}
-					if (theme_1 == theme_2_name){point+=parseInt(rowData[8])}
-					if (theme_2 == theme_1_name){point+=parseInt(rowData[6])/2}
-					if (theme_2 == theme_2_name){point+=parseInt(rowData[8])/2}
-					if (dom_name == domi_name){point+=parseInt(rowData[10])}
-					selectedData.push(no); // リストに行のデータを追加する
-					selectedMaxVal[no] = parseInt(rowData[1]);
-					if (wall.has(no)){tmp_selected_wall.push([point,no])}
-					if (floor.has(no)){tmp_selected_floor.push([point,no])}
-					if (front_top.has(no)){tmp_selected_front_top.push([point,no])}
-					if (front_bot.has(no)){tmp_selected_front_bot.push([point,no])}
-					if (other.has(no)){tmp_selected_other.push([point,no])}
-				}
-
-			}
+		){
+			var point = 0;
+			if (theme_1 == theme_1_name){point+=parseInt(rowData[6])}
+			if (theme_1 == theme_2_name){point+=parseInt(rowData[8])}
+			if (theme_2 == theme_1_name){point+=parseInt(rowData[6])/2}
+			if (theme_2 == theme_2_name){point+=parseInt(rowData[8])/2}
+			if (dom_name == domi_name){point+=parseInt(rowData[10])}
+			selectedData.push(no); // リストに行のデータを追加する
+			selectedMaxVal[no] = parseInt(rowData[1]);
+			if (wall.has(no)){tmp_selected_wall.push([point,no])}
+			if (floor.has(no)){tmp_selected_floor.push([point,no])}
+			if (front_top.has(no)){tmp_selected_front_top.push([point,no])}
+			if (front_bot.has(no)){tmp_selected_front_bot.push([point,no])}
+			if (other.has(no)){tmp_selected_other.push([point,no])}
+		}
     });
 	function sortByNumber(listOfLists) {
 		listOfLists.sort((a, b) => b[0] - a[0]);
