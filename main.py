@@ -34,7 +34,8 @@ try:
     worksheet = client.open_by_url(spreadsheet_url).worksheet(sheet_name)
     rows = worksheet.get_all_values()
 except:
-    exit
+    import sys
+    sys.exit()
 # 取得したデータを処理する
 with open('data.csv', mode='w', encoding='UTF-8') as file:
     count = 0
