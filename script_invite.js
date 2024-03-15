@@ -338,7 +338,7 @@ async function calcstart(){
 	}
 	var ret = maxResult;
 	if (ret[0] < 0){var comfort = '部屋の条件を満たせませんでした。条件を緩くしてください。';}
-	else {var comfort = '達成率:'+Math.min([(100*ret[0]),100]).toFixed(2) + '％';}
+	else {var comfort = '達成率:'+Math.min((100*ret[0]),100).toFixed(2) + '％';}
 	var output='<div><button id="copyButton">\
 	<i class="fas fa-clipboard">コピー</i>\
 	<div id="balloonContainer"/></button></div>\
