@@ -607,10 +607,10 @@ function simulatedAnnealing(selected_data,selected_maxval,room_rank) {
 // 初期解の生成
 function initializeSolution(room_rank) {
 	var max_furniture = max_furniture_num.get(room_rank)
-	var ret = chooseRandomElements(selected_floor_list,1).concat(
-		chooseRandomElements(selected_wall_list,1)
-		,chooseRandomElements(selected_front_top_list,2)
-		,chooseRandomElements(selected_front_bot_list,2));
+	var ret = chooseRandomElements(selected_floor_list,room_rank >= 31 ? 2 : 1).concat(
+		chooseRandomElements(selected_wall_list,room_rank >= 31 ? 2 : 1)
+		,chooseRandomElements(selected_front_top_list,room_rank >= 31 ? 4 : 2)
+		,chooseRandomElements(selected_front_bot_list,room_rank >= 31 ? 4 : 2));
 	ret = ret.concat(chooseRandomElements(selected_other_list,max_furniture-ret.length));
 	return ret;
 }
