@@ -711,7 +711,7 @@ function saveInputState() {
 	const inputs = document.querySelectorAll('input[type="number"]');
 	for (let i = 0; i < inputs.length; i++) {
 	  let iid = inputs[i].id;
-	  if (!(localStorage.getItem(iid)==''||localStorage.getItem(iid)==null)){
+	  if (!(iid == "rankInput" || localStorage.getItem(iid)==''||localStorage.getItem(iid)==null)){
 		  inputs[i].value = localStorage.getItem(iid);
 	  }
 	}
