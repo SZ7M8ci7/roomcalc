@@ -517,28 +517,36 @@ function cost(data_list, selected_maxval, room_rank) {
 	var selectedValue = selectElement.options[selectedIndex].value;
 	var dom_line = dom_judge[selectedValue];
 	var ret_dom = 0;
-	if (dormitory_val >= dom_line){
-		ret_dom = 1;
-	} else {
-		ret_dom = dormitory_val/dom_line
-	}
+
 	// プルダウンメニュー要素を取得
 	var selectElement = document.getElementById("theme_grade");
 	var selectedIndex = selectElement.selectedIndex;
 	var selectedValue = selectElement.options[selectedIndex].value;
 	var theme_line = theme_judge[selectedValue];
 	var ret_theme = 0;
-	if (themes_val >= theme_line){
-		ret_theme = 1;
-	} else {
-		ret_theme = themes_val/theme_line;
-	}
+
 	if (wall_area > max_wall_num.get(room_rank)) {base_point *= 0.25**(wall_area - max_wall_num.get(room_rank))}
 	if (floor_area > max_floor_num.get(room_rank))  {base_point *= 0.25**(floor_area - max_floor_num.get(room_rank))}
 	if (place_area > max_floor_num.get(room_rank))  {base_point *= 0.25**(place_area - max_floor_num.get(room_rank))}
 	if (data_list.filter(element => frame.has(element)).length > 1) {base_point *= 0.25}
 	for (const key of countMap.keys()) {
 		if (countMap.get(key) > selected_maxval[key]) {base_point *= 0.25**(countMap.get(key) - selected_maxval[key])}
+	}
+	if (themes_val >= theme_line && dormitory_val >= dom_line && base_point >= 0.8){
+		// そのままいこう
+		ret_theme = themes_val/theme_line;
+		ret_dom = dormitory_val/dom_line;
+	} else {
+		if (themes_val >= theme_line){
+			ret_theme = 1;
+		} else {
+			ret_theme = themes_val/theme_line;
+		}
+		if (dormitory_val >= dom_line){
+			ret_dom = 1;
+		} else {
+			ret_dom = dormitory_val/dom_line;
+		}	
 	}
 	return base_point*ret_theme*ret_dom;
 }
