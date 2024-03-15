@@ -488,11 +488,16 @@ function cost(data_list, room_rank) {
 		sb = series_bonus.get(key)
 		series_point += sb.get(series_nums[key]);
 	}
-	let penalty = Math.max(0, 10 - (max_furniture_num.get(room_rank) - data_list.length));
+	let penalty = 0;
+	if (room_rank >= 31){
+		penalty = 0;
+	} else {
+		penalty = Math.max(0, 10 - (max_furniture_num.get(room_rank) - data_list.length));
+	}
 	if (wall_area > max_wall_num.get(room_rank)) {base_point -= 9999*(wall_area-max_wall_num.get(room_rank));}
 	if (floor_area > max_floor_num.get(room_rank)) {base_point -= 9999*(floor_area-max_floor_num.get(room_rank));}
 	if (place_area > max_floor_num.get(room_rank)) {base_point -= 9999*(place_area-max_floor_num.get(room_rank));}
-	if (data_list.filter(element => frame.has(element)).length > 1){base_point -= 9999};
+	if (data_list.filter(element => frame.has(element)).length > (room_rank >= 31 ? 2 : 1)){base_point -= 9999};
 	return base_point + theme_point + dom_point + series_point - penalty * (penalty + 2) + dormitory_point;
 }
   // 焼きなまし法
@@ -565,10 +570,10 @@ function simulatedAnnealing(selected_data,must_data,room_rank) {
 // 初期解の生成
 function initializeSolution(must_data,room_rank) {
 	var max_furniture = max_furniture_num.get(room_rank)
-	var ret = chooseRandomElements(selected_floor,1-must_floor_list.length).concat(
-		chooseRandomElements(selected_wall,1-must_wall_list.length)
-		,chooseRandomElements(selected_front_top,2-must_front_top_list.length)
-		,chooseRandomElements(selected_front_bot,2-must_front_bot_list.length));
+	var ret = chooseRandomElements(selected_floor,(room_rank >= 31 ? 2 : 1)-must_floor_list.length).concat(
+		chooseRandomElements(selected_wall,(room_rank >= 31 ? 2 : 1)-must_wall_list.length)
+		,chooseRandomElements(selected_front_top,(room_rank >= 31 ? 4 : 2)-must_front_top_list.length)
+		,chooseRandomElements(selected_front_bot,(room_rank >= 31 ? 4 : 2)-must_front_bot_list.length));
 	ret = ret.concat(chooseRandomElements(selected_other,max_furniture-ret.length-must_data.length));
 	return ret;
 }
