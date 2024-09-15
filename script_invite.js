@@ -289,9 +289,16 @@ $(document).ready(function() {
 	$('#filter-col3').on('keyup change', function() {
         table.column(2).search(this.value).draw();
     });
-    $('#filter-col4').on('keyup change', function() {
-        table.column(3).search(this.value).draw();
-    });
+	$('#filter-col4').on('keyup change', function() {
+		var searchTerm = this.value;
+		if (searchTerm) {
+			// Add `^` and `$` to enforce exact match
+			table.column(3).search('^' + searchTerm + '$', true, false).draw();
+		} else {
+			// If the search term is empty, clear the filter
+			table.column(3).search('').draw();
+		}
+	});
     $('#filter-col5').on('keyup change', function() {
         table.column(4).search(this.value).draw();
     });
