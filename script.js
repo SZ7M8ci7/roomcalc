@@ -268,6 +268,8 @@ $(document).ready(function() {
     $.fn.dataTable.ext.search.push(function(settings, data, dataIndex) {
         var filterAllChecked = $('#filter-all-select').prop('checked');
         var filterMustChecked = $('#filter-must-select').prop('checked');
+        var filterAllNonChecked = $('#filter-all-nonselect').prop('checked');
+        var filterMustNonChecked = $('#filter-must-nonselect').prop('checked');
 
         // 行ごとのチェックボックス状態を正確に取得
         var rowNode = table.row(dataIndex).node();
@@ -278,9 +280,16 @@ $(document).ready(function() {
         if (filterAllChecked && !allSelectChecked) {
             return false; // 全選択フィルタがオンの場合、チェックされていない行は非表示
         }
-
+        // 全未選択フィルタの適用
+        if (filterAllNonChecked && allSelectChecked) {
+            return false; // 全未選択フィルタがオンの場合、チェックされている行は非表示
+        }
         // 必須フィルタの適用
         if (filterMustChecked && !mustSelectChecked) {
+            return false; // 必須フィルタがオンの場合、チェックされていない行は非表示
+        }
+        // 必須未選択フィルタの適用
+        if (filterMustNonChecked && mustSelectChecked) {
             return false; // 必須フィルタがオンの場合、チェックされていない行は非表示
         }
 
@@ -293,6 +302,13 @@ $(document).ready(function() {
     });
 
     $(document).on('change', '#filter-must-select', function() {
+        table.draw();
+    });
+	$(document).on('change', '#filter-all-nonselect', function() {
+        table.draw();
+    });
+
+    $(document).on('change', '#filter-must-nonselect', function() {
         table.draw();
     });
     $('#filter-col4').on('keyup change', function() {
