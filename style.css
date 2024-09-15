@@ -121,10 +121,12 @@ textarea {
 
   .tabContent.active {
 	display: block;
+	min-width: 1500px;
 	background-color: #e9f3e8; /* タブの背景色を設定 */
   }
   .marginmid {
     width: 95%;
+	min-width: 1500px;
 	margin: 0 auto;
 	padding-top: 10px;
   }

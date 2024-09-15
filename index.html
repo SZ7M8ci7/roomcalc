@@ -19,6 +19,37 @@
 	<script type="text/javascript" src="https://cdn.datatables.net/1.10.19/js/jquery.dataTables.js"></script>
 	<link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.15.1/css/all.css">
 	<script src="script.js"></script>
+	<style>
+		/* 1列目と2列目の幅を固定 */
+		th,
+		td {
+			text-align: center;
+			white-space: nowrap; /* テキストが改行しないようにする */
+		}
+		th:nth-child(1),
+		td:nth-child(1) {
+			width: 100px; /* 所持全選択 */
+		}
+		th:nth-child(2),
+		td:nth-child(2) {
+			width: 100px; /* 必須任意 */
+		}
+		/* 各テキストフィールドの幅を設定 */
+		.filter-col4 { width: 200px; }
+		.filter-col5 { width: 30px; }
+		.filter-col6 { width: 50px; }
+		.filter-col7 { width: 100px; }
+		.filter-col8 { width: 90px; }
+		.filter-col9 { width: 100px; }
+		.filter-col10 { width: 10px; }
+		.filter-col11 { width: 110px; }
+		.filter-col12 { width: 110px; }
+		.filter-col13 { width: 110px; }
+		.filter-col14 { width: 100px; }
+		.filter-col15 { width: 100px; }
+		.filter-col16 { width: 120px; }
+		.filter-col17 { width: 130px; }
+	</style>
 </head>
 <body>
 	<h1>いごこち度検討ツール</h1>
@@ -41,25 +72,25 @@
 				<button id="checkcache" onclick="saveCheckboxState()">チェック状況をキャッシュに保存</button>
 				<thead>
 					<tr>
-						<th>全選択<br>所持</th>
-						<th>必須<br>(任意)</th>
+						<th>所持<br><input type='checkbox' name='select_all' id='select-all'>全選択<br><input type="checkbox" id="filter-all-select">フィルタ</th>
+						<th>必須（任意）<br><input type="checkbox" id="filter-must-select">フィルタ</th>
 						<th>No</th>
-						<th>名称</th>
-						<th>レア</th>
-						<th>分類</th>
-						<th>項目5</th>
-						<th>項目6</th>
-						<th>項目7</th>
-						<th>項目8</th>
-						<th>項目9</th>
-						<th>項目10</th>
-						<th>項目11</th>
-						<th>テーマ１</th>
-						<th>テーマ２</th>
-						<th>寮</th>
-						<th>シリーズ</th>
+						<th><input type="text" placeholder="名称" id="filter-col4" class="filter-col4"></th>
+						<th><input type="text" placeholder="レア" id="filter-col5" class="filter-col5"></th>
+						<th><input type="text" placeholder="分類" id="filter-col6" class="filter-col6"></th>
+						<th><input type="text" placeholder="項目5" id="filter-col7" class="filter-col7"></th>
+						<th><input type="text" placeholder="項目6" id="filter-col8" class="filter-col8"></th>
+						<th><input type="text" placeholder="項目7" id="filter-col9" class="filter-col9"></th>
+						<th><input type="text" placeholder="項目8" id="filter-col10" class="filter-col10"></th>
+						<th><input type="text" placeholder="項目9" id="filter-col11" class="filter-col11"></th>
+						<th><input type="text" placeholder="項目10" id="filter-col12" class="filter-col12"></th>
+						<th><input type="text" placeholder="項目11" id="filter-col13" class="filter-col13"></th>
+						<th><input type="text" placeholder="テーマ１" id="filter-col14" class="filter-col14"></th>
+						<th><input type="text" placeholder="テーマ２" id="filter-col15" class="filter-col15"></th>
+						<th><input type="text" placeholder="寮" id="filter-col16" class="filter-col16"></th>
+						<th><input type="text" placeholder="シリーズ" id="filter-col17" class="filter-col17"></th>
 					</tr>
-				</thead>
+				</thead>				
 				<tbody></tbody>
 			</table>
 			</div>

@@ -216,6 +216,9 @@ $(document).ready(function() {
 					{ "orderable": false, "targets": [0,1] }
 				]				
             });
+			$('#myTable thead th input[type="text"]').on('click', function(e) {
+				e.stopPropagation(); // デフォルトのソート切り替えを停止
+			});
             for (var i = 0; i < lines.length; i++) {
                 if (i !== lines.length - 1 || lines[i]) { // 最終行でない場合か、最終行でも空でない場合
                     var row_data = lines[i].split(",");
@@ -250,10 +253,6 @@ $(document).ready(function() {
 				  other.add(i);
 				}
 			  }
-			// 全選択のチェックボックスを追加する
-			var headerCheckbox =
-				"<th><input type='checkbox' name='select_all' id='select-all'><br></th>";
-			table.column(0).header().innerHTML = headerCheckbox + table.column(0).header().innerHTML;
 		  
 			  // 全選択のチェックボックスをクリックした時の処理を追加する
 			$("#select-all").click(function () {
@@ -265,7 +264,79 @@ $(document).ready(function() {
     });
 	const tabs = document.querySelectorAll(".tab");
 	const tabContents = document.querySelectorAll(".tabContent");
+    // カスタムフィルターを設定
+    $.fn.dataTable.ext.search.push(function(settings, data, dataIndex) {
+        var filterAllChecked = $('#filter-all-select').prop('checked');
+        var filterMustChecked = $('#filter-must-select').prop('checked');
 
+        // 行ごとのチェックボックス状態を正確に取得
+        var rowNode = table.row(dataIndex).node();
+        var allSelectChecked = $(rowNode).find('input[name="select[]"]').prop('checked');
+        var mustSelectChecked = $(rowNode).find('input[name="mustselect[]"]').prop('checked');
+
+        // 全選択フィルタの適用
+        if (filterAllChecked && !allSelectChecked) {
+            return false; // 全選択フィルタがオンの場合、チェックされていない行は非表示
+        }
+
+        // 必須フィルタの適用
+        if (filterMustChecked && !mustSelectChecked) {
+            return false; // 必須フィルタがオンの場合、チェックされていない行は非表示
+        }
+
+        return true; // 該当しない行は表示
+    });
+
+    // チェックボックスのイベントリスナーを追加
+    $(document).on('change', '#filter-all-select', function() {
+        table.draw();
+    });
+
+    $(document).on('change', '#filter-must-select', function() {
+        table.draw();
+    });
+    $('#filter-col4').on('keyup change', function() {
+        table.column(3).search(this.value).draw();
+    });
+    $('#filter-col5').on('keyup change', function() {
+        table.column(4).search(this.value).draw();
+    });
+    $('#filter-col6').on('keyup change', function() {
+        table.column(5).search(this.value).draw();
+    });
+    $('#filter-col7').on('keyup change', function() {
+        table.column(6).search(this.value).draw();
+    });
+    $('#filter-col8').on('keyup change', function() {
+        table.column(7).search(this.value).draw();
+    });
+    $('#filter-col9').on('keyup change', function() {
+        table.column(8).search(this.value).draw();
+    });
+    $('#filter-col10').on('keyup change', function() {
+        table.column(9).search(this.value).draw();
+    });
+    $('#filter-col11').on('keyup change', function() {
+        table.column(10).search(this.value).draw();
+    });
+    $('#filter-col12').on('keyup change', function() {
+        table.column(11).search(this.value).draw();
+    });
+    $('#filter-col13').on('keyup change', function() {
+        table.column(12).search(this.value).draw();
+    });
+    $('#filter-col14').on('keyup change', function() {
+        table.column(13).search(this.value).draw();
+    });
+    $('#filter-col15').on('keyup change', function() {
+        table.column(14).search(this.value).draw();
+    });
+    $('#filter-col16').on('keyup change', function() {
+        table.column(15).search(this.value).draw();
+    });
+    $('#filter-col17').on('keyup change', function() {
+        table.column(16).search(this.value).draw();
+    });
 	tabs.forEach((tab) => {
 		tab.addEventListener("click", () => {
 			const target = tab.getAttribute("data-tab");

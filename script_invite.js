@@ -210,6 +210,10 @@ $(document).ready(function() {
 					{ "orderable": false, "targets": [0] }
 				]				
             });
+			
+			$('#myTable thead th input[type="text"]').on('click', function(e) {
+				e.stopPropagation(); // デフォルトのソート切り替えを停止
+			});
             for (var i = 0; i < lines.length; i++) {
                 if (i !== lines.length - 1 || lines[i]) { // 最終行でない場合か、最終行でも空でない場合
                     var row_data = lines[i].split(",");
@@ -262,7 +266,65 @@ $(document).ready(function() {
     });
 	const tabs = document.querySelectorAll(".tab");
 	const tabContents = document.querySelectorAll(".tabContent");
-
+	$.fn.dataTable.ext.search.push(
+		function(settings, data, dataIndex) {
+			var filterValue = $('#filter-col2').val(); // フィルタのテキストフィールドの値
+			var columnValue = $('#max_num' + dataIndex).val(); // max_numXの値を取得
+	
+			// フィルタが空なら全て表示、値が含まれていればその行を表示
+			if (filterValue === '' || columnValue==filterValue) {
+				return true;
+			}
+			return false;
+		}
+	);
+	
+	// フィルタが変更されたときにテーブルを再描画
+	$('#filter-col1').on('keyup change', function() {
+        table.column(0).search(this.value).draw();
+	});
+	$('#filter-col2').on('keyup change', function() {
+		table.draw();
+    });
+	$('#filter-col3').on('keyup change', function() {
+        table.column(2).search(this.value).draw();
+    });
+    $('#filter-col4').on('keyup change', function() {
+        table.column(3).search(this.value).draw();
+    });
+    $('#filter-col5').on('keyup change', function() {
+        table.column(4).search(this.value).draw();
+    });
+    $('#filter-col6').on('keyup change', function() {
+        table.column(5).search(this.value).draw();
+    });
+    $('#filter-col7').on('keyup change', function() {
+        table.column(6).search(this.value).draw();
+    });
+    $('#filter-col8').on('keyup change', function() {
+        table.column(7).search(this.value).draw();
+    });
+    $('#filter-col9').on('keyup change', function() {
+        table.column(8).search(this.value).draw();
+    });
+    $('#filter-col10').on('keyup change', function() {
+        table.column(9).search(this.value).draw();
+    });
+    $('#filter-col11').on('keyup change', function() {
+        table.column(10).search(this.value).draw();
+    });
+    $('#filter-col12').on('keyup change', function() {
+        table.column(11).search(this.value).draw();
+    });
+    $('#filter-col13').on('keyup change', function() {
+        table.column(12).search(this.value).draw();
+    });
+    $('#filter-col14').on('keyup change', function() {
+        table.column(13).search(this.value).draw();
+    });
+    $('#filter-col15').on('keyup change', function() {
+        table.column(14).search(this.value).draw();
+    });
 	tabs.forEach((tab) => {
 		tab.addEventListener("click", () => {
 			const target = tab.getAttribute("data-tab");

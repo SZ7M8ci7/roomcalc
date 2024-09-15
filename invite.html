@@ -19,6 +19,23 @@
 	<script type="text/javascript" src="https://cdn.datatables.net/1.10.19/js/jquery.dataTables.js"></script>
 	<link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.15.1/css/all.css">
 	<script src="script_invite.js"></script>
+	<style>
+		.filter-col1 { width: 50px; }
+		.filter-col2 { width: 30px; }
+		.filter-col3 { width: 200px; }
+		.filter-col4 { width: 30px; }
+		.filter-col5 { width: 80px; }
+		.filter-col6 { width: 70px; }
+		.filter-col7 { width: 30px; }
+		.filter-col8 { width: 70px; }
+		.filter-col9 { width: 30px; }
+		.filter-col10 { width: 100px; }
+		.filter-col11 { width: 30px; }
+		.filter-col12 { width: 180px; }
+		.filter-col13 { width: 110px; }
+		.filter-col14 { width: 100px; }
+		.filter-col15 { width: 100px; }
+	</style>
 </head>
 <body>
 	<h1>招待部屋検討ツール</h1>
@@ -83,21 +100,21 @@
 				<button id="setall" onclick="setall()">表示項目一括設定</button>
 				<thead>
 					<tr>
-						<th>No</th>
-						<th>個数</th>
-						<th>名称</th>
-						<th>レア</th>
-						<th>分類</th>
-						<th>テーマ１</th>
-						<th>値</th>
-						<th>テーマ２</th>
-						<th>値</th>
-						<th>寮</th>
-						<th>値</th>
-						<th>シリーズ</th>
-						<th>設置</th>
-						<th>床</th>
-						<th>壁</th>
+						<th><input type="text" placeholder="No" id="filter-col1" class="filter-col1"></th>
+						<th><input type="text" placeholder="個数" id="filter-col2" class="filter-col2"></th>
+						<th><input type="text" placeholder="名称" id="filter-col3" class="filter-col3"></th>
+						<th><input type="text" placeholder="レア" id="filter-col4" class="filter-col4"></th>
+						<th><input type="text" placeholder="分類" id="filter-col5" class="filter-col5"></th>
+						<th><input type="text" placeholder="テーマ１" id="filter-col6" class="filter-col6"></th>
+						<th><input type="text" placeholder="値" id="filter-col7" class="filter-col7"></th>
+						<th><input type="text" placeholder="テーマ２" id="filter-col8" class="filter-col8"></th>
+						<th><input type="text" placeholder="値" id="filter-col9" class="filter-col9"></th>
+						<th><input type="text" placeholder="寮" id="filter-col10" class="filter-col10"></th>
+						<th><input type="text" placeholder="値" id="filter-col11" class="filter-col11"></th>
+						<th><input type="text" placeholder="シリーズ" id="filter-col12" class="filter-col12"></th>
+						<th><input type="text" placeholder="設置" id="filter-col13" class="filter-col13"></th>
+						<th><input type="text" placeholder="床" id="filter-col14" class="filter-col14"></th>
+						<th><input type="text" placeholder="壁" id="filter-col15" class="filter-col15"></th>
 					</tr>
 				</thead>
 				<tbody></tbody>
