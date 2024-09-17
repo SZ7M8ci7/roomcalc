@@ -107,7 +107,11 @@ $(document).ready(function() {
 		var stats_all = '';
 		$.each(checkboxes, function(index, checkbox){ // 各チェックボックスに対して処理を行う
 			var cid = $(checkbox).attr("id"); // チェックボックスの名前を取得
-			if (cid != 'select-all'){
+			if (cid != 'select-all' && 
+				cid != 'filter-all-select' && 
+				cid != 'filter-all-nonselect' && 
+				cid != 'filter-must-select' && 
+				cid != 'filter-must-nonselect') {
 				if (cid.match(/must/)){
 					stats_all += (last_checked + '' + checkbox.checked).replaceAll('true','1').replaceAll('false','0');
 				}
