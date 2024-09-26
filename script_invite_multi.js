@@ -44,9 +44,6 @@ let selected_front_bot_list = [];
 let selected_other_list = [];
 
 var seed = Math.floor(Math.random() * 100000);
-var dom_name = '';
-var theme_1 = '';
-var theme_2 = '';
 
 const chara_data = {
 	"riddle":["ハーツラビュル","スタイリッシュ","ユニーク"]
@@ -384,9 +381,6 @@ async function calcstart(){
 	seed = parseInt(document.getElementById("seed").value);
 	if (seed == -1){seed = Math.floor(Math.random() * 100000);}
 	Math.random.seed(seed);
-
-	// プルダウンメニュー要素を取得
-	var selectElement = document.getElementById("chara");
 	// 選択されたキャラの値を配列として取得
 	let selectedCharacters = [];
 	$('#chara option:selected').each(function() {
@@ -401,17 +395,6 @@ async function calcstart(){
 		theme_1s.push(chara_data[character][1]);
 		theme_2s.push(chara_data[character][2]);
 	});
-	console.log(dom_names);
-	// 選択されたオプションのインデックスを取得
-	var selectedIndex = selectElement.selectedIndex;
-
-	// 選択されたオプションの値を取得
-	var selectedValue = selectElement.options[selectedIndex].value;
-
-	dom_name = chara_data[selectedValue][0];
-	theme_1 = chara_data[selectedValue][1];
-	theme_2 = chara_data[selectedValue][2];
-
 
 	messageSpan.innerHTML = "0/"+trynum+" 処理中...";
 	await dummyTask();
@@ -505,14 +488,7 @@ function displaySelected() {
 	var tmp_selected_front_top = [];
 	var tmp_selected_front_bot = [];
 	var tmp_selected_other = [];
-	// プルダウンメニュー要素を取得
-	var selectElement = document.getElementById("chara");
 
-	// 選択されたオプションのインデックスを取得
-	var selectedIndex = selectElement.selectedIndex;
-
-	// 選択されたオプションの値を取得
-	var selectedValue = selectElement.options[selectedIndex].text;
     selectedRows.each(function () {
         var rowData = [];
 		$(this).find('td').each(function () {
