@@ -381,11 +381,6 @@ async function calcstart(){
 	seed = parseInt(document.getElementById("seed").value);
 	if (seed == -1){seed = Math.floor(Math.random() * 100000);}
 	Math.random.seed(seed);
-	// 選択されたキャラの値を配列として取得
-	// let selectedCharacters = [];
-	// $('#chara option:selected').each(function() {
-	// 	selectedCharacters.push($(this).val());
-	// });
 
 	// チェックボックスから選択されたキャラクターの値を取得
     let selectedCharacters = [];
@@ -393,6 +388,8 @@ async function calcstart(){
     checkboxes.forEach(function(checkbox) {
         selectedCharacters.push(checkbox.value);
     });
+
+	console.log(selectedCharacters);
 
 	// dom_name, theme_1, theme_2 を選択されたすべてのキャラに対して計算
 
