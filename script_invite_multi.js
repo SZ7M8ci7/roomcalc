@@ -382,19 +382,29 @@ async function calcstart(){
 	if (seed == -1){seed = Math.floor(Math.random() * 100000);}
 	Math.random.seed(seed);
 	// 選択されたキャラの値を配列として取得
-	let selectedCharacters = [];
-	$('#chara option:selected').each(function() {
-		selectedCharacters.push($(this).val());
-	});
+	// let selectedCharacters = [];
+	// $('#chara option:selected').each(function() {
+	// 	selectedCharacters.push($(this).val());
+	// });
+
+	// チェックボックスから選択されたキャラクターの値を取得
+    let selectedCharacters = [];
+    const checkboxes = document.querySelectorAll('#chara input[type="checkbox"]:checked');
+    checkboxes.forEach(function(checkbox) {
+        selectedCharacters.push(checkbox.value);
+    });
 
 	// dom_name, theme_1, theme_2 を選択されたすべてのキャラに対して計算
-
 
 	selectedCharacters.forEach(character => {
 		dom_names.push(chara_data[character][0]);
 		theme_1s.push(chara_data[character][1]);
 		theme_2s.push(chara_data[character][2]);
 	});
+
+	console.log(dom_names);
+	console.log(theme_1s);
+	console.log(theme_2s);
 
 	messageSpan.innerHTML = "0/"+trynum+" 処理中...";
 	await dummyTask();

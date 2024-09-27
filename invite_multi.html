@@ -19,6 +19,49 @@
 	<script type="text/javascript" src="https://cdn.datatables.net/1.10.19/js/jquery.dataTables.js"></script>
 	<link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.15.1/css/all.css">
 	<script src="script_invite_multi.js"></script>
+	<script>
+  		function toggleDropdown() {
+  			document.getElementById("chara").classList.toggle("show");
+		}
+
+		// 選択したキャラクターを動的に更新＆テキスト表示
+		function updateSelectedCharacters() {
+			const checkboxes = document.querySelectorAll('#chara input[type="checkbox"]:checked');
+			let selectedChars = [];
+			checkboxes.forEach(checkbox => {
+				// ラベルテキストを取得
+				const label = checkbox.closest('label').textContent.trim();
+				selectedChars.push(label);
+			});
+
+			const selectedCharDisplay = document.getElementById('selectedCharDisplay');
+			if (selectedChars.length > 0) {
+				selectedCharDisplay.innerHTML = "選択中: " + selectedChars.join(", ");
+			} else {
+				selectedCharDisplay.innerHTML = "選択中: なし";
+			}
+		}
+
+		// 選択解除ボタン
+		function clearSelections() {
+			const checkboxes = document.querySelectorAll('#chara input[type="checkbox"]');
+			checkboxes.forEach(checkbox => checkbox.checked = false);
+			updateSelectedCharacters();
+		}
+
+		// ドロップダウン外をクリックしたら閉じる
+		window.onclick = function(event) {
+			if (!event.target.matches('.dropbtn') && !event.target.closest('.dropdown-content')) {
+				var dropdowns = document.getElementsByClassName("dropdown-content");
+				for (var i = 0; i < dropdowns.length; i++) {
+					var openDropdown = dropdowns[i];
+					if (openDropdown.classList.contains('show')) {
+						openDropdown.classList.remove('show');
+					}
+				}
+			}
+		}
+	</script>
 	<style>
 		.filter-col1 { width: 50px; }
 		.filter-col2 { width: 30px; }
@@ -39,34 +82,42 @@
 </head>
 <body>
 	<h1>招待部屋検討ツール</h1>
-	<select id="chara" multiple>
-		<option value="riddle">リドル</option>
-		<option value="ace">エース</option>
-		<option value="deuce">デュース</option>
-		<option value="trey">トレイ</option>
-		<option value="cater">ケイト</option>
-		<option value="leona">レオナ</option>
-		<option value="jack">ジャック</option>
-		<option value="ruggie">ラギー</option>
-		<option value="azul">アズール</option>
-		<option value="jade">ジェイド</option>
-		<option value="floyd">フロイド</option>
-		<option value="kalim">カリム</option>
-		<option value="jamil">ジャミル</option>
-		<option value="vil">ヴィル</option>
-		<option value="epel">エペル</option>
-		<option value="rook">ルーク</option>
-		<option value="idia">イデア</option>
-		<option value="ortho">オルト</option>
-		<option value="malleus">マレウス</option>
-		<option value="silver">シルバー</option>
-		<option value="sebek">セベク</option>
-		<option value="lilia">リリア</option>
-		<option value="grim">グリム</option>
-		<option value="crowley">クロウリー</option>
-		<option value="crewel">クルーウェル</option>
-		
-	</select>
+	<div class="selection-container">
+		<!-- 選択解除ボタン -->
+		<button id="clearSelection" class="clear-button" onclick="clearSelections()">選択を解除</button>
+		<div class="dropdown">
+			<button onclick="toggleDropdown()" class="dropbtn">キャラクター選択</button>
+				<div id="chara" class="dropdown-content">
+					<label><input type="checkbox" value="riddle" onchange="updateSelectedCharacters()">リドル</label><br>
+					<label><input type="checkbox" value="ace" onchange="updateSelectedCharacters()">エース</label><br>
+					<label><input type="checkbox" value="deuce" onchange="updateSelectedCharacters()">デュース</label><br>
+					<label><input type="checkbox" value="trey" onchange="updateSelectedCharacters()">トレイ</label><br>
+					<label><input type="checkbox" value="cater" onchange="updateSelectedCharacters()">ケイト</label><br>
+					<label><input type="checkbox" value="leona" onchange="updateSelectedCharacters()">レオナ</label><br>
+					<label><input type="checkbox" value="jack" onchange="updateSelectedCharacters()">ジャック</label><br>
+					<label><input type="checkbox" value="ruggie" onchange="updateSelectedCharacters()">ラギー</label><br>
+					<label><input type="checkbox" value="azul" onchange="updateSelectedCharacters()">アズール</label><br>
+					<label><input type="checkbox" value="jade" onchange="updateSelectedCharacters()">ジェイド</label><br>
+					<label><input type="checkbox" value="floyd" onchange="updateSelectedCharacters()">フロイド</label><br>
+					<label><input type="checkbox" value="kalim" onchange="updateSelectedCharacters()">カリム</label><br>
+					<label><input type="checkbox" value="jamil" onchange="updateSelectedCharacters()">ジャミル</label><br>
+					<label><input type="checkbox" value="vil" onchange="updateSelectedCharacters()">ヴィル</label><br>
+					<label><input type="checkbox" value="epel" onchange="updateSelectedCharacters()">エペル</label><br>
+					<label><input type="checkbox" value="rook" onchange="updateSelectedCharacters()">ルーク</label><br>
+					<label><input type="checkbox" value="idia" onchange="updateSelectedCharacters()">イデア</label><br>
+					<label><input type="checkbox" value="ortho" onchange="updateSelectedCharacters()">オルト</label><br>
+					<label><input type="checkbox" value="malleus" onchange="updateSelectedCharacters()">マレウス</label><br>
+					<label><input type="checkbox" value="silver" onchange="updateSelectedCharacters()">シルバー</label><br>
+					<label><input type="checkbox" value="sebek" onchange="updateSelectedCharacters()">セベク</label><br>
+					<label><input type="checkbox" value="lilia" onchange="updateSelectedCharacters()">リリア</label><br>
+					<label><input type="checkbox" value="grim" onchange="updateSelectedCharacters()">グリム</label><br>
+					<label><input type="checkbox" value="crowley" onchange="updateSelectedCharacters()">クロウリー</label><br>
+					<label><input type="checkbox" value="crewel" onchange="updateSelectedCharacters()">クルーウェル</label><br>
+				</div>
+		</div>
+		<!-- 選択中のキャラクターを表示 -->
+		<span id="selectedCharDisplay">選択中: なし</span>
+	</div>
 	<select id="dom_grade">
 		<option value="excellent">寮Excellent</option>
 		<option value="great">寮Great</option>
@@ -90,7 +141,7 @@
 		<div class="tab" data-tab="tab3">計算設定</div>
 		<div class="tab" data-tab="tab4">状態操作</div>
 		<div class="tab" data-tab="tab5">使い方等</div>
-	</div>	
+	</div>
 	<div>
 		<div class="tabContent active" data-tab="tab1Content">
 			<div class="marginmid">
