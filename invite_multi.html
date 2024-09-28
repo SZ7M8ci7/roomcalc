@@ -19,47 +19,6 @@
 	<script type="text/javascript" src="https://cdn.datatables.net/1.10.19/js/jquery.dataTables.js"></script>
 	<link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.15.1/css/all.css">
 	<script src="script_invite_multi.js"></script>
-	<script>
-		function openModal() {
-			document.getElementById("charaModal").style.display = "block";
-		}
-
-		function closeModal() {
-			document.getElementById("charaModal").style.display = "none";
-		}
-
-		// キャラクター選択を更新
-		function updateSelectedCharacters() {
-			const checkboxes = document.querySelectorAll('#charaList input[type="checkbox"]:checked');
-			let selectedCharas = [];
-			checkboxes.forEach(checkbox => {
-				const label = checkbox.closest('label').textContent.trim();
-				selectedCharas.push(label);
-			});
-
-			const selectedCharaDisplay = document.getElementById('selectedCharDisplay');
-			if (selectedCharas.length > 0) {
-				selectedCharaDisplay.innerHTML = "選択中: " + selectedCharas.join(", ");
-			} else {
-				selectedCharaDisplay.innerHTML = "選択中: なし";
-			}
-		}
-
-		// 選択解除ボタン
-		function clearSelections() {
-			const checkboxes = document.querySelectorAll('#charaList input[type="checkbox"]');
-			checkboxes.forEach(checkbox => checkbox.checked = false);
-			updateSelectedCharacters();
-		}
-
-		// モーダル外をクリックした場合に閉じる処理
-		window.onclick = function(event) {
-			const modal = document.getElementById("charaModal");
-			if (event.target == modal) {
-				closeModal();
-			}
-		}
-	</script>
 	<style>
 		.filter-col1 { width: 50px; }
 		.filter-col2 { width: 30px; }
@@ -97,32 +56,6 @@
             </div>
             <div class="modal-body">
                 <div id="charaList">
-                    <!-- キャラクターのチェックボックスリスト -->
-                    <label><input type="checkbox" value="riddle" onchange="updateSelectedCharacters()">リドル</label>
-                    <label><input type="checkbox" value="ace" onchange="updateSelectedCharacters()">エース</label>
-                    <label><input type="checkbox" value="deuce" onchange="updateSelectedCharacters()">デュース</label>
-                    <label><input type="checkbox" value="trey" onchange="updateSelectedCharacters()">トレイ</label>
-                    <label><input type="checkbox" value="cater" onchange="updateSelectedCharacters()">ケイト</label>
-                    <label><input type="checkbox" value="leona" onchange="updateSelectedCharacters()">レオナ</label>
-                    <label><input type="checkbox" value="jack" onchange="updateSelectedCharacters()">ジャック</label>
-                    <label><input type="checkbox" value="ruggie" onchange="updateSelectedCharacters()">ラギー</label>
-                    <label><input type="checkbox" value="azul" onchange="updateSelectedCharacters()">アズール</label>
-                    <label><input type="checkbox" value="jade" onchange="updateSelectedCharacters()">ジェイド</label>
-                    <label><input type="checkbox" value="floyd" onchange="updateSelectedCharacters()">フロイド</label>
-                    <label><input type="checkbox" value="kalim" onchange="updateSelectedCharacters()">カリム</label>
-                    <label><input type="checkbox" value="jamil" onchange="updateSelectedCharacters()">ジャミル</label>
-                    <label><input type="checkbox" value="vil" onchange="updateSelectedCharacters()">ヴィル</label>
-                    <label><input type="checkbox" value="epel" onchange="updateSelectedCharacters()">エペル</label>
-                    <label><input type="checkbox" value="rook" onchange="updateSelectedCharacters()">ルーク</label>
-                    <label><input type="checkbox" value="idia" onchange="updateSelectedCharacters()">イデア</label>
-                    <label><input type="checkbox" value="ortho" onchange="updateSelectedCharacters()">オルト</label>
-                    <label><input type="checkbox" value="malleus" onchange="updateSelectedCharacters()">マレウス</label>
-                    <label><input type="checkbox" value="silver" onchange="updateSelectedCharacters()">シルバー</label>
-                    <label><input type="checkbox" value="sebek" onchange="updateSelectedCharacters()">セベク</label>
-                    <label><input type="checkbox" value="lilia" onchange="updateSelectedCharacters()">リリア</label>
-                    <label><input type="checkbox" value="grim" onchange="updateSelectedCharacters()">グリム</label>
-                    <label><input type="checkbox" value="crowley" onchange="updateSelectedCharacters()">クロウリー</label>
-                    <label><input type="checkbox" value="crewel" onchange="updateSelectedCharacters()">クルーウェル</label>
                 </div>
             </div>
         </div>
@@ -187,6 +120,12 @@
 				<div id="selectedRows"></div>
 				<div id="statsDetail"></div>
 				<div id="themeDetail"></div>
+				<p>テーマExcellent: 541<br>
+				テーマGreat: 271<br>
+				テーマGood: 91<br><br>
+				寮Excellent: 401<br>
+				寮Great: 301<br>
+				寮Good: 101</p>
 			</div>
 		</div>		
 		<div class="tabContent" data-tab="tab3Content">
