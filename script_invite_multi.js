@@ -44,6 +44,33 @@ let selected_front_bot_list = [];
 let selected_other_list = [];
 
 var seed = Math.floor(Math.random() * 100000);
+const characterNames = [
+    { name: "リドル", english: "riddle" },
+    { name: "エース", english: "ace" },
+    { name: "デュース", english: "deuce" },
+    { name: "トレイ", english: "trey" },
+    { name: "ケイト", english: "cater" },
+    { name: "レオナ", english: "leona" },
+    { name: "ジャック", english: "jack" },
+    { name: "ラギー", english: "ruggie" },
+    { name: "アズール", english: "azul" },
+    { name: "ジェイド", english: "jade" },
+    { name: "フロイド", english: "floyd" },
+    { name: "カリム", english: "kalim" },
+    { name: "ジャミル", english: "jamil" },
+    { name: "ヴィル", english: "vil" },
+    { name: "エペル", english: "epel" },
+    { name: "ルーク", english: "rook" },
+    { name: "イデア", english: "idia" },
+    { name: "オルト", english: "ortho" },
+    { name: "マレウス", english: "malleus" },
+    { name: "シルバー", english: "silver" },
+    { name: "セベク", english: "sebek" },
+    { name: "リリア", english: "lilia" },
+    { name: "グリム", english: "grim" },
+    { name: "クロウリー", english: "crowley" },
+    { name: "クルーウェル", english: "crewel" },
+];
 
 const chara_data = {
 	"riddle":["ハーツラビュル","スタイリッシュ","ユニーク"]
@@ -372,6 +399,7 @@ function dummyfunction() {
 let dom_names = [];
 let  theme_1s = [];
 let  theme_2s = [];
+let selectedCharacters = [];
 async function calcstart(){
 	dom_names = [];
 	theme_1s = [];
@@ -383,11 +411,11 @@ async function calcstart(){
 	Math.random.seed(seed);
 
 	// チェックボックスから選択されたキャラクターの値を取得
-    let selectedCharacters = [];
-    const checkboxes = document.querySelectorAll('#chara input[type="checkbox"]:checked');
-    checkboxes.forEach(function(checkbox) {
-        selectedCharacters.push(checkbox.value);
-    });
+	selectedCharacters = [];
+	const checkboxes = document.querySelectorAll('#charaList input[type="checkbox"]:checked');
+	checkboxes.forEach(function(checkbox) {
+		selectedCharacters.push(checkbox.value);
+	});
 
 	console.log(selectedCharacters);
 
@@ -435,6 +463,8 @@ async function calcstart(){
 	}
 	output+='</div>';
 	$("#selectedRows").html(output);
+	$("#statsDetail").html(makeStatsDetail(ret[1]));
+	$("#themeDetail").html(makeThemeDetail(ret[1]));
 	messageSpan.innerHTML = comfort;
 
 	const copyButton = document.getElementById("copyButton");
@@ -463,6 +493,73 @@ async function calcstart(){
         });
       });
 }
+
+function makeStatsDetail(furnitureNoList) {
+	let html_text = '<div style="display: flex;"><table border="1"><tr><th>キャラ</th><th>テーマ</th><th>寮</th></tr>';
+	const themes = {
+		スタイリッシュ: 0,
+		ユニーク: 0,
+		スタイリッシュ: 0,
+		ベーシック: 0,
+		エレガント: 0,
+		ポップ: 0,
+	};
+	const doms = {
+		ハーツラビュル: 0,
+		サバナクロー: 0,
+		オクタヴィネル: 0,
+		スカラビア: 0,
+		ポムフィオーレ: 0,
+		イグニハイド: 0,
+		ディアソムニア: 0,
+		ナイトレイブンカレッジ: 0,
+	};
+
+	for (let i = 0; i < furnitureNoList.length; i++) {
+		let data = furnitures[furnitureNoList[i]];
+		themes[data[11]] += (parseFloat(data[9]) || 0);
+		themes[data[12]] += (parseFloat(data[10]) || 0);
+		doms[data[13]] += parseInt(data[8]) || 0;
+	}
+
+	characterNames.forEach(cur => {
+		const character = chara_data[cur.english]
+		const theme_point = themes[character[1]] + (themes[character[2]] / 2);
+		const dom_point = doms[character[0]];
+		html_text += `<tr><td>${cur.name}</td><td>${theme_point}</td><td>${dom_point}</td></tr>`;
+	});
+
+	html_text += '</table></div>';
+	return html_text;
+}
+function makeThemeDetail(furnitureNoList) {
+    let html_text = '<div style="display: flex;"><table border="1"><tr><th>テーマ</th><th>テーマ値</th></tr>';
+    const themes = {
+        スタイリッシュ: 0,
+        ユニーク: 0,
+        ベーシック: 0,
+        エレガント: 0,
+        ポップ: 0,
+        '－': 0,
+    };
+
+    // テーマ値を集計
+    for (let i = 0; i < furnitureNoList.length; i++) {
+        let data = furnitures[furnitureNoList[i]];
+        themes[data[11]] += (parseFloat(data[9]) || 0);
+        themes[data[12]] += (parseFloat(data[10]) || 0);
+    }
+
+    // テーマごとに行を追加
+    for (const theme in themes) {
+        html_text += `<tr><td>${theme}</td><td>${themes[theme]}</td></tr>`;
+    }
+
+    html_text += '</table></div>';
+    return html_text;
+}
+
+
 function longTask() {
 	return new Promise(resolve => {
 		setTimeout(() => {
@@ -567,10 +664,6 @@ function cost(data_list, selected_maxval, room_rank) {
     let floor_area = 0;
     let wall_area = 0;
     const countMap = new Map();
-	let selectedCharacters = [];
-    $('#chara option:selected').each(function() {
-        selectedCharacters.push($(this).val());
-    });
     // 各キャラクターごとのdormitory_val, themes_valを格納するためのオブジェクト
     let dormitory_vals = {};
     let themes_vals = {};
