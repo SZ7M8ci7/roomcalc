@@ -45,33 +45,54 @@ let selected_other_list = [];
 
 var seed = Math.floor(Math.random() * 100000);
 
-const chara_data = {
-	"riddle":["ハーツラビュル","スタイリッシュ","ユニーク"]
-	,"ace":["ハーツラビュル","ユニーク","スタイリッシュ"]
-	,"deuce":["ハーツラビュル","ベーシック","エレガント"]
-	,"trey":["ハーツラビュル","エレガント","ポップ"]
-	,"cater":["ハーツラビュル","ポップ","ベーシック"]
-	,"leona":["サバナクロー","エレガント","ユニーク"]
-	,"jack":["サバナクロー","ベーシック","スタイリッシュ"]
-	,"ruggie":["サバナクロー","ポップ","ベーシック"]
-	,"azul":["オクタヴィネル","エレガント","スタイリッシュ"]
-	,"jade":["オクタヴィネル","スタイリッシュ","ベーシック"]
-	,"floyd":["オクタヴィネル","ユニーク","ポップ"]
-	,"kalim":["スカラビア","ポップ","ユニーク"]
-	,"jamil":["スカラビア","スタイリッシュ","エレガント"]
-	,"vil":["ポムフィオーレ","エレガント","スタイリッシュ"]
-	,"epel":["ポムフィオーレ","ベーシック","ポップ"]
-	,"rook":["ポムフィオーレ","ユニーク","エレガント"]
-	,"idia":["イグニハイド","ユニーク","エレガント"]
-	,"ortho":["イグニハイド","ユニーク","ポップ"]
-	,"malleus":["ディアソムニア","スタイリッシュ","ベーシック"]
-	,"silver":["ディアソムニア","ベーシック","エレガント"]
-	,"sebek":["ディアソムニア","スタイリッシュ","ユニーク"]
-	,"lilia":["ディアソムニア","ポップ","ユニーク"]
-	,"grim":["ナイトレイブンカレッジ","ポップ","ベーシック"]
-	,"crowley":["ナイトレイブンカレッジ","スタイリッシュ","ベーシック"]
-	,"crewel":["ナイトレイブンカレッジ","エレガント","スタイリッシュ"]
+let chara_data = {}; // キャラクターデータ
+let characterNames = []; // 名前と英語名のリスト
+
+// CSVファイルを読み込んでキャラクターデータを生成し、チェックボックスを生成する
+function loadAndGenerateCharacterList() {
+    // データを初期化
+    chara_data = {};
+    characterNames = [];
+
+    // 非同期でCSVデータを読み込む
+    return $.ajax({
+        url: 'characters.csv',
+        dataType: 'text',
+        success: function(data) {
+            // キャラクターデータとチェックボックスを生成
+            const lines = data.split("\n").map(line => line.trim().replace("\r", ""));
+            let charaListDiv = $('#charaList');
+            charaListDiv.empty();  // 初期化
+
+            lines.forEach(line => {
+                const values = line.split(",");
+                if (values.length >= 5) {
+                    const name = values[0].trim();
+                    const englishName = values[1].trim();
+                    const dormitory = values[2].trim();
+                    const theme1 = values[3].trim();
+                    const theme2 = values[4].trim();
+
+                    // キャラクター情報を保存
+                    chara_data[englishName] = [dormitory, theme1, theme2];
+                    characterNames.push({ name: name, english: englishName });
+
+                    // チェックボックスHTMLを生成
+                    const checkboxHtml = `
+                        <label>
+                            <input type="checkbox" value="${englishName}" onchange="updateSelectedCharacters()">
+                            ${name}
+                        </label>`;
+                    charaListDiv.append(checkboxHtml);
+                }
+            });
+        },
+        error: function(error) {
+            console.error("キャラクターデータの読み込みに失敗しました:", error);
+        }
+    });
 }
+
 const theme_judge = {
 	"normal":1
 	,"good":91
@@ -86,6 +107,8 @@ const dom_judge = {
 }
 
 $(document).ready(function() {
+	loadAndGenerateCharacterList(); // ページの読み込み時にキャラクタリストを生成
+
 	const copyButton_stats = document.getElementById("copyButton_stats");
 	copyButton_stats.addEventListener("click", () => {
         const textToCopy = $("#text-stats").val();
@@ -347,6 +370,39 @@ $(document).ready(function() {
 	});
 });
 
+// キャラクター選択を更新
+function updateSelectedCharacters() {
+    const selectedCharas = Array.from(document.querySelectorAll('#charaList input[type="checkbox"]:checked'))
+        .map(checkbox => checkbox.closest('label').textContent.trim());
+
+    const selectedCharaDisplay = document.getElementById('selectedCharDisplay');
+    selectedCharaDisplay.innerHTML = selectedCharas.length > 0
+        ? "選択中: " + selectedCharas.join(", ")
+        : "選択中: なし";
+}
+
+// 選択解除ボタン
+function clearSelections() {
+    document.querySelectorAll('#charaList input[type="checkbox"]').forEach(checkbox => checkbox.checked = false);
+    updateSelectedCharacters();  // 選択状態を更新
+}
+
+
+// モーダル操作
+function openModal() {
+    document.getElementById("charaModal").style.display = "block";
+}
+
+function closeModal() {
+    document.getElementById("charaModal").style.display = "none";
+}
+
+window.onclick = function(event) {
+    const modal = document.getElementById("charaModal");
+    if (event.target == modal) {
+        closeModal();
+    }
+}
 
 function chooseRandomElements(arr, num) {
 	const result = [];
@@ -372,6 +428,7 @@ function dummyfunction() {
 let dom_names = [];
 let  theme_1s = [];
 let  theme_2s = [];
+let selectedCharacters = [];
 async function calcstart(){
 	dom_names = [];
 	theme_1s = [];
@@ -381,15 +438,15 @@ async function calcstart(){
 	seed = parseInt(document.getElementById("seed").value);
 	if (seed == -1){seed = Math.floor(Math.random() * 100000);}
 	Math.random.seed(seed);
-	// 選択されたキャラの値を配列として取得
-	let selectedCharacters = [];
-	$('#chara option:selected').each(function() {
-		selectedCharacters.push($(this).val());
+
+	// チェックボックスから選択されたキャラクターの値を取得
+	selectedCharacters = [];
+	const checkboxes = document.querySelectorAll('#charaList input[type="checkbox"]:checked');
+	checkboxes.forEach(function(checkbox) {
+		selectedCharacters.push(checkbox.value);
 	});
 
 	// dom_name, theme_1, theme_2 を選択されたすべてのキャラに対して計算
-
-
 	selectedCharacters.forEach(character => {
 		dom_names.push(chara_data[character][0]);
 		theme_1s.push(chara_data[character][1]);
@@ -411,6 +468,7 @@ async function calcstart(){
 	var ret = maxResult;
 	if (ret[0] < 0){var comfort = '部屋の条件を満たせませんでした。条件を緩くしてください。';}
 	else {var comfort = '達成率:'+Math.min((100*ret[0]),100).toFixed(2) + '％';}
+
 	var output='<div><button id="copyButton">\
 	<i class="fas fa-clipboard">コピー</i>\
 	<div id="balloonContainer"/></button></div>\
@@ -426,8 +484,11 @@ async function calcstart(){
 		output+=cur+'<br>';
 		copy_txt+=cur+'\r\n';
 	}
+
 	output+='</div>';
 	$("#selectedRows").html(output);
+	$("#statsDetail").html(makeStatsDetail(ret[1]));
+	$("#themeDetail").html(makeThemeDetail(ret[1]));
 	messageSpan.innerHTML = comfort;
 
 	const copyButton = document.getElementById("copyButton");
@@ -456,6 +517,74 @@ async function calcstart(){
         });
       });
 }
+
+function makeStatsDetail(furnitureNoList) {
+
+	let html_text = '<div style="display: flex;"><table border="1"><tr><th>キャラ</th><th>テーマ</th><th>寮</th></tr>';
+	const themes = {
+		スタイリッシュ: 0,
+		ユニーク: 0,
+		スタイリッシュ: 0,
+		ベーシック: 0,
+		エレガント: 0,
+		ポップ: 0,
+	};
+	const doms = {
+		ハーツラビュル: 0,
+		サバナクロー: 0,
+		オクタヴィネル: 0,
+		スカラビア: 0,
+		ポムフィオーレ: 0,
+		イグニハイド: 0,
+		ディアソムニア: 0,
+		ナイトレイブンカレッジ: 0,
+	};
+
+	for (let i = 0; i < furnitureNoList.length; i++) {
+		let data = furnitures[furnitureNoList[i]];
+		themes[data[11]] += (parseFloat(data[9]) || 0);
+		themes[data[12]] += (parseFloat(data[10]) || 0);
+		doms[data[13]] += parseInt(data[8]) || 0;
+	}
+
+	characterNames.forEach(cur => {
+		const character = chara_data[cur.english]
+		const theme_point = themes[character[1]] + (themes[character[2]] / 2);
+		const dom_point = doms[character[0]];
+		html_text += `<tr><td>${cur.name}</td><td>${theme_point}</td><td>${dom_point}</td></tr>`;
+	});
+
+	html_text += '</table></div>';
+	return html_text;
+}
+function makeThemeDetail(furnitureNoList) {
+    let html_text = '<div style="display: flex;"><table border="1"><tr><th>テーマ</th><th>テーマ値</th></tr>';
+    const themes = {
+        スタイリッシュ: 0,
+        ユニーク: 0,
+        ベーシック: 0,
+        エレガント: 0,
+        ポップ: 0,
+        '－': 0,
+    };
+
+    // テーマ値を集計
+    for (let i = 0; i < furnitureNoList.length; i++) {
+        let data = furnitures[furnitureNoList[i]];
+        themes[data[11]] += (parseFloat(data[9]) || 0);
+        themes[data[12]] += (parseFloat(data[10]) || 0);
+    }
+
+    // テーマごとに行を追加
+    for (const theme in themes) {
+        html_text += `<tr><td>${theme}</td><td>${themes[theme]}</td></tr>`;
+    }
+
+    html_text += '</table></div>';
+    return html_text;
+}
+
+
 function longTask() {
 	return new Promise(resolve => {
 		setTimeout(() => {
@@ -560,10 +689,6 @@ function cost(data_list, selected_maxval, room_rank) {
     let floor_area = 0;
     let wall_area = 0;
     const countMap = new Map();
-	let selectedCharacters = [];
-    $('#chara option:selected').each(function() {
-        selectedCharacters.push($(this).val());
-    });
     // 各キャラクターごとのdormitory_val, themes_valを格納するためのオブジェクト
     let dormitory_vals = {};
     let themes_vals = {};
