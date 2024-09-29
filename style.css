@@ -267,3 +267,39 @@ p {
     margin-right: 10px; /* 間隔を確保するためのマージン */
     width: auto; /* 必要に応じて幅を自動調整 */
 }
+
+.heartslabyul {
+    background-color: #dc143c; /* ハーツラビュル */
+	color: rgba(241, 241, 241, 0.884);
+}
+
+.savanaclaw {
+    background-color: #ffa500; /* サバナクロー */
+}
+
+.octavinelle {
+    background-color: #9999ff; /* オクタヴィネル */
+}
+
+.scarabia {
+    background-color: #800000; /* スカラビア */
+	color: rgba(241, 241, 241, 0.884);
+}
+
+.pomefiore {
+    background-color: #483d8b; /* ポムフィオーレ */
+	color: rgba(241, 241, 241, 0.884);
+}
+
+.ignihydes {
+    background-color: #00bfff; /* イグニハイド */
+}
+
+.diasomnia {
+    background-color: #006400; /* ディアソムニア */
+	color: rgba(241, 241, 241, 0.884);
+}
+
+.nightRavenCollege {
+    background-color: #eef5ff; /* ナイトレイブンカレッジ */
+}

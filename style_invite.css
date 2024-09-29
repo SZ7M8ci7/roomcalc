@@ -1,0 +1,28 @@
+table {
+	border-collapse: collapse;
+	margin: 0 auto;
+	padding: 0;
+	/* box-shadow: 0 0 15px -6px #00000073; */
+	border: 1px solid #000000; /* 追加: テーブル全体の枠線 */
+}
+table tbody tr:hover {
+	background-color: #fffae9;
+}
+table th,
+table td {
+	padding: .35em 1em;
+	border-bottom: 1px solid #000000;
+}
+table tbody th {
+	text-align: left;
+	font-size: .8em;
+	background-color: #fffeec;
+}
+.selectedChara {
+	background-color: #bffdcce0;
+}
+#themeDetail {
+    display: flex;
+    flex-direction: column; /* 縦方向に配置 */
+    align-items: flex-start; /* 左揃えにする場合 */
+}

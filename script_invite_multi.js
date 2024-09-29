@@ -371,8 +371,9 @@ $(document).ready(function() {
 });
 
 // キャラクター選択を更新
+let selectedCharas = [];
 function updateSelectedCharacters() {
-    const selectedCharas = Array.from(document.querySelectorAll('#charaList input[type="checkbox"]:checked'))
+    selectedCharas = Array.from(document.querySelectorAll('#charaList input[type="checkbox"]:checked'))
         .map(checkbox => checkbox.closest('label').textContent.trim());
 
     const selectedCharaDisplay = document.getElementById('selectedCharDisplay');
@@ -489,6 +490,15 @@ async function calcstart(){
 	$("#selectedRows").html(output);
 	$("#statsDetail").html(makeStatsDetail(ret[1]));
 	$("#themeDetail").html(makeThemeDetail(ret[1]));
+	$("#themeDetail").append(`
+		<p>判定基準値<br>
+		テーマExcellent: 541<br>
+		テーマGreat: 271<br>
+		テーマGood: 91<br><br>
+		寮Excellent: 401<br>
+		寮Great: 301<br>
+		寮Good: 101</p>
+	`);
 	messageSpan.innerHTML = comfort;
 
 	const copyButton = document.getElementById("copyButton");
@@ -517,10 +527,9 @@ async function calcstart(){
         });
       });
 }
-
 function makeStatsDetail(furnitureNoList) {
 
-	let html_text = '<div style="display: flex;"><table border="1"><tr><th>キャラ</th><th>テーマ</th><th>寮</th></tr>';
+	let html_text = '<div style="display: flex;"><table border="1"><tr><th>キャラ</th><th>寮値</th><th>テーマ値</th><th>テーマ1</th><th>テーマ2</th></tr>';
 	const themes = {
 		スタイリッシュ: 0,
 		ユニーク: 0,
@@ -540,6 +549,17 @@ function makeStatsDetail(furnitureNoList) {
 		ナイトレイブンカレッジ: 0,
 	};
 
+	const dormClassMap = {
+		'ハーツラビュル': 'heartslabyul',
+		'サバナクロー': 'savanaclaw',
+		'オクタヴィネル': 'octavinelle',
+		'スカラビア': 'scarabia',
+		'ポムフィオーレ': 'pomefiore',
+		'イグニハイド': 'ignihydes',
+		'ディアソムニア': 'diasomnia',
+		'ナイトレイブンカレッジ': 'nightRavenCollege',
+	};
+
 	for (let i = 0; i < furnitureNoList.length; i++) {
 		let data = furnitures[furnitureNoList[i]];
 		themes[data[11]] += (parseFloat(data[9]) || 0);
@@ -548,15 +568,36 @@ function makeStatsDetail(furnitureNoList) {
 	}
 
 	characterNames.forEach(cur => {
-		const character = chara_data[cur.english]
+		const character = chara_data[cur.english];
 		const theme_point = themes[character[1]] + (themes[character[2]] / 2);
 		const dom_point = doms[character[0]];
-		html_text += `<tr><td>${cur.name}</td><td>${theme_point}</td><td>${dom_point}</td></tr>`;
+		const dormClass = dormClassMap[character[0]] || '';
+
+		// キャラクターが選ばれているかどうかでCSSクラスを変更
+		if (selectedCharas.indexOf(cur.name) == -1) {
+			html_text += `<tr>
+				<td class="${dormClass}">${cur.name}</td>
+				<td>${dom_point}</td>
+				<td>${theme_point}</td>
+				<td>${character[1]}</td>
+				<td>${character[2]}</td>
+			</tr>`;
+		} else {
+			html_text += `<tr>
+				<td class="${dormClass}">${cur.name}</td>
+				<td class="selectedChara">${dom_point}</td>
+				<td class="selectedChara">${theme_point}</td>
+				<td class="selectedChara">${character[1]}</td>
+				<td class="selectedChara">${character[2]}</td>
+			</tr>`;
+		}
 	});
 
 	html_text += '</table></div>';
 	return html_text;
 }
+
+
 function makeThemeDetail(furnitureNoList) {
     let html_text = '<div style="display: flex;"><table border="1"><tr><th>テーマ</th><th>テーマ値</th></tr>';
     const themes = {
