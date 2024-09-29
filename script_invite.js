@@ -44,37 +44,55 @@ let selected_front_bot_list = [];
 let selected_other_list = [];
 
 var seed = Math.floor(Math.random() * 100000);
-var dom_name = '';
-var theme_1 = '';
-var theme_2 = '';
 
-const chara_data = {
-	"riddle":["ハーツラビュル","スタイリッシュ","ユニーク"]
-	,"ace":["ハーツラビュル","ユニーク","スタイリッシュ"]
-	,"deuce":["ハーツラビュル","ベーシック","エレガント"]
-	,"trey":["ハーツラビュル","エレガント","ポップ"]
-	,"cater":["ハーツラビュル","ポップ","ベーシック"]
-	,"leona":["サバナクロー","エレガント","ユニーク"]
-	,"jack":["サバナクロー","ベーシック","スタイリッシュ"]
-	,"ruggie":["サバナクロー","ポップ","ベーシック"]
-	,"azul":["オクタヴィネル","エレガント","スタイリッシュ"]
-	,"jade":["オクタヴィネル","スタイリッシュ","ベーシック"]
-	,"floyd":["オクタヴィネル","ユニーク","ポップ"]
-	,"kalim":["スカラビア","ポップ","ユニーク"]
-	,"jamil":["スカラビア","スタイリッシュ","エレガント"]
-	,"vil":["ポムフィオーレ","エレガント","スタイリッシュ"]
-	,"epel":["ポムフィオーレ","ベーシック","ポップ"]
-	,"rook":["ポムフィオーレ","ユニーク","エレガント"]
-	,"idia":["イグニハイド","ユニーク","エレガント"]
-	,"ortho":["イグニハイド","ユニーク","ポップ"]
-	,"malleus":["ディアソムニア","スタイリッシュ","ベーシック"]
-	,"silver":["ディアソムニア","ベーシック","エレガント"]
-	,"sebek":["ディアソムニア","スタイリッシュ","ユニーク"]
-	,"lilia":["ディアソムニア","ポップ","ユニーク"]
-	,"grim":["ナイトレイブンカレッジ","ポップ","ベーシック"]
-	,"crowley":["ナイトレイブンカレッジ","スタイリッシュ","ベーシック"]
-	,"crewel":["ナイトレイブンカレッジ","エレガント","スタイリッシュ"]
+let chara_data = {}; // キャラクターデータ
+let characterNames = []; // 名前と英語名のリスト
+
+// CSVファイルを読み込んでキャラクターデータを生成し、チェックボックスを生成する
+function loadAndGenerateCharacterList() {
+    // データを初期化
+    chara_data = {};
+    characterNames = [];
+
+    // 非同期でCSVデータを読み込む
+    return $.ajax({
+        url: 'characters.csv',
+        dataType: 'text',
+        success: function(data) {
+            // キャラクターデータとチェックボックスを生成
+            const lines = data.split("\n").map(line => line.trim().replace("\r", ""));
+            let charaListDiv = $('#charaList');
+            charaListDiv.empty();  // 初期化
+
+            lines.forEach(line => {
+                const values = line.split(",");
+                if (values.length >= 5) {
+                    const name = values[0].trim();
+                    const englishName = values[1].trim();
+                    const dormitory = values[2].trim();
+                    const theme1 = values[3].trim();
+                    const theme2 = values[4].trim();
+
+                    // キャラクター情報を保存
+                    chara_data[englishName] = [dormitory, theme1, theme2];
+                    characterNames.push({ name: name, english: englishName });
+
+                    // チェックボックスHTMLを生成
+                    const checkboxHtml = `
+                        <label>
+                            <input type="checkbox" value="${englishName}" onchange="updateSelectedCharacters()">
+                            ${name}
+                        </label>`;
+                    charaListDiv.append(checkboxHtml);
+                }
+            });
+        },
+        error: function(error) {
+            console.error("キャラクターデータの読み込みに失敗しました:", error);
+        }
+    });
 }
+
 const theme_judge = {
 	"normal":1
 	,"good":91
@@ -89,6 +107,8 @@ const dom_judge = {
 }
 
 $(document).ready(function() {
+	loadAndGenerateCharacterList(); // ページの読み込み時にキャラクタリストを生成
+
 	const copyButton_stats = document.getElementById("copyButton_stats");
 	copyButton_stats.addEventListener("click", () => {
         const textToCopy = $("#text-stats").val();
@@ -350,6 +370,40 @@ $(document).ready(function() {
 	});
 });
 
+// キャラクター選択を更新
+let selectedCharas = [];
+function updateSelectedCharacters() {
+    selectedCharas = Array.from(document.querySelectorAll('#charaList input[type="checkbox"]:checked'))
+        .map(checkbox => checkbox.closest('label').textContent.trim());
+
+    const selectedCharaDisplay = document.getElementById('selectedCharDisplay');
+    selectedCharaDisplay.innerHTML = selectedCharas.length > 0
+        ? "選択中: " + selectedCharas.join(", ")
+        : "選択中: なし";
+}
+
+// 選択解除ボタン
+function clearSelections() {
+    document.querySelectorAll('#charaList input[type="checkbox"]').forEach(checkbox => checkbox.checked = false);
+    updateSelectedCharacters();  // 選択状態を更新
+}
+
+
+// モーダル操作
+function openModal() {
+    document.getElementById("charaModal").style.display = "block";
+}
+
+function closeModal() {
+    document.getElementById("charaModal").style.display = "none";
+}
+
+window.onclick = function(event) {
+    const modal = document.getElementById("charaModal");
+    if (event.target == modal) {
+        closeModal();
+    }
+}
 
 function chooseRandomElements(arr, num) {
 	const result = [];
@@ -372,27 +426,33 @@ return new Promise(resolve => {
 function dummyfunction() {
 	return 0;
 }
-		
+let dom_names = [];
+let  theme_1s = [];
+let  theme_2s = [];
+let selectedCharacters = [];
 async function calcstart(){
+	dom_names = [];
+	theme_1s = [];
+	theme_2s = [];
 	const messageSpan = document.getElementById("processing");
 	let trynum = parseInt(document.getElementById("trynum").value);
 	seed = parseInt(document.getElementById("seed").value);
 	if (seed == -1){seed = Math.floor(Math.random() * 100000);}
 	Math.random.seed(seed);
 
-	// プルダウンメニュー要素を取得
-	var selectElement = document.getElementById("chara");
+	// チェックボックスから選択されたキャラクターの値を取得
+	selectedCharacters = [];
+	const checkboxes = document.querySelectorAll('#charaList input[type="checkbox"]:checked');
+	checkboxes.forEach(function(checkbox) {
+		selectedCharacters.push(checkbox.value);
+	});
 
-	// 選択されたオプションのインデックスを取得
-	var selectedIndex = selectElement.selectedIndex;
-
-	// 選択されたオプションの値を取得
-	var selectedValue = selectElement.options[selectedIndex].value;
-
-	dom_name = chara_data[selectedValue][0];
-	theme_1 = chara_data[selectedValue][1];
-	theme_2 = chara_data[selectedValue][2];
-
+	// dom_name, theme_1, theme_2 を選択されたすべてのキャラに対して計算
+	selectedCharacters.forEach(character => {
+		dom_names.push(chara_data[character][0]);
+		theme_1s.push(chara_data[character][1]);
+		theme_2s.push(chara_data[character][2]);
+	});
 
 	messageSpan.innerHTML = "0/"+trynum+" 処理中...";
 	await dummyTask();
@@ -409,6 +469,7 @@ async function calcstart(){
 	var ret = maxResult;
 	if (ret[0] < 0){var comfort = '部屋の条件を満たせませんでした。条件を緩くしてください。';}
 	else {var comfort = '達成率:'+Math.min((100*ret[0]),100).toFixed(2) + '％';}
+
 	var output='<div><button id="copyButton">\
 	<i class="fas fa-clipboard">コピー</i>\
 	<div id="balloonContainer"/></button></div>\
@@ -424,8 +485,20 @@ async function calcstart(){
 		output+=cur+'<br>';
 		copy_txt+=cur+'\r\n';
 	}
+
 	output+='</div>';
 	$("#selectedRows").html(output);
+	$("#statsDetail").html(makeStatsDetail(ret[1]));
+	$("#themeDetail").html(makeThemeDetail(ret[1]));
+	$("#themeDetail").append(`
+		<p>判定基準値<br>
+		テーマExcellent: 541<br>
+		テーマGreat: 271<br>
+		テーマGood: 91<br><br>
+		寮Excellent: 401<br>
+		寮Great: 301<br>
+		寮Good: 101</p>
+	`);
 	messageSpan.innerHTML = comfort;
 
 	const copyButton = document.getElementById("copyButton");
@@ -454,6 +527,105 @@ async function calcstart(){
         });
       });
 }
+function makeStatsDetail(furnitureNoList) {
+
+	let html_text = '<div style="display: flex;"><table border="1"><tr><th>キャラ</th><th>寮値</th><th>テーマ値</th><th>テーマ1</th><th>テーマ2</th></tr>';
+	const themes = {
+		スタイリッシュ: 0,
+		ユニーク: 0,
+		スタイリッシュ: 0,
+		ベーシック: 0,
+		エレガント: 0,
+		ポップ: 0,
+	};
+	const doms = {
+		ハーツラビュル: 0,
+		サバナクロー: 0,
+		オクタヴィネル: 0,
+		スカラビア: 0,
+		ポムフィオーレ: 0,
+		イグニハイド: 0,
+		ディアソムニア: 0,
+		ナイトレイブンカレッジ: 0,
+	};
+
+	const dormClassMap = {
+		'ハーツラビュル': 'heartslabyul',
+		'サバナクロー': 'savanaclaw',
+		'オクタヴィネル': 'octavinelle',
+		'スカラビア': 'scarabia',
+		'ポムフィオーレ': 'pomefiore',
+		'イグニハイド': 'ignihydes',
+		'ディアソムニア': 'diasomnia',
+		'ナイトレイブンカレッジ': 'nightRavenCollege',
+	};
+
+	for (let i = 0; i < furnitureNoList.length; i++) {
+		let data = furnitures[furnitureNoList[i]];
+		themes[data[11]] += (parseFloat(data[9]) || 0);
+		themes[data[12]] += (parseFloat(data[10]) || 0);
+		doms[data[13]] += parseInt(data[8]) || 0;
+	}
+
+	characterNames.forEach(cur => {
+		const character = chara_data[cur.english];
+		const theme_point = themes[character[1]] + (themes[character[2]] / 2);
+		const dom_point = doms[character[0]];
+		const dormClass = dormClassMap[character[0]] || '';
+
+		// キャラクターが選ばれているかどうかでCSSクラスを変更
+		if (selectedCharas.indexOf(cur.name) == -1) {
+			html_text += `<tr>
+				<td class="${dormClass}">${cur.name}</td>
+				<td>${dom_point}</td>
+				<td>${theme_point}</td>
+				<td>${character[1]}</td>
+				<td>${character[2]}</td>
+			</tr>`;
+		} else {
+			html_text += `<tr>
+				<td class="${dormClass}">${cur.name}</td>
+				<td class="selectedChara">${dom_point}</td>
+				<td class="selectedChara">${theme_point}</td>
+				<td class="selectedChara">${character[1]}</td>
+				<td class="selectedChara">${character[2]}</td>
+			</tr>`;
+		}
+	});
+
+	html_text += '</table></div>';
+	return html_text;
+}
+
+
+function makeThemeDetail(furnitureNoList) {
+    let html_text = '<div style="display: flex;"><table border="1"><tr><th>テーマ</th><th>テーマ値</th></tr>';
+    const themes = {
+        スタイリッシュ: 0,
+        ユニーク: 0,
+        ベーシック: 0,
+        エレガント: 0,
+        ポップ: 0,
+        '－': 0,
+    };
+
+    // テーマ値を集計
+    for (let i = 0; i < furnitureNoList.length; i++) {
+        let data = furnitures[furnitureNoList[i]];
+        themes[data[11]] += (parseFloat(data[9]) || 0);
+        themes[data[12]] += (parseFloat(data[10]) || 0);
+    }
+
+    // テーマごとに行を追加
+    for (const theme in themes) {
+        html_text += `<tr><td>${theme}</td><td>${themes[theme]}</td></tr>`;
+    }
+
+    html_text += '</table></div>';
+    return html_text;
+}
+
+
 function longTask() {
 	return new Promise(resolve => {
 		setTimeout(() => {
@@ -486,14 +658,7 @@ function displaySelected() {
 	var tmp_selected_front_top = [];
 	var tmp_selected_front_bot = [];
 	var tmp_selected_other = [];
-	// プルダウンメニュー要素を取得
-	var selectElement = document.getElementById("chara");
 
-	// 選択されたオプションのインデックスを取得
-	var selectedIndex = selectElement.selectedIndex;
-
-	// 選択されたオプションの値を取得
-	var selectedValue = selectElement.options[selectedIndex].text;
     selectedRows.each(function () {
         var rowData = [];
 		$(this).find('td').each(function () {
@@ -508,16 +673,16 @@ function displaySelected() {
 		var theme_1_name = rowData[5];
 		var theme_2_name = rowData[7];
 		var domi_name = rowData[9];
-		if (theme_1 == theme_1_name || theme_1 == theme_2_name ||
-			theme_2 == theme_1_name || theme_2 == theme_2_name ||
-			dom_name == domi_name
-		){
+		// テーマとドミトリーの一致を確認
+		if (theme_1s.includes(theme_1_name) || theme_1s.includes(theme_2_name) ||
+			theme_2s.includes(theme_1_name) || theme_2s.includes(theme_2_name) ||
+			dom_names.includes(domi_name)) {
 			var point = 0;
-			if (theme_1 == theme_1_name){point+=parseInt(rowData[6])}
-			if (theme_1 == theme_2_name){point+=parseInt(rowData[8])}
-			if (theme_2 == theme_1_name){point+=parseInt(rowData[6])/2}
-			if (theme_2 == theme_2_name){point+=parseInt(rowData[8])/2}
-			if (dom_name == domi_name){point+=parseInt(rowData[10])}
+			if (theme_1s.includes(theme_1_name)){point+=parseInt(rowData[6])}
+			if (theme_1s.includes(theme_2_name)){point+=parseInt(rowData[8])}
+			if (theme_2s.includes(theme_1_name)){point+=parseInt(rowData[6])/2}
+			if (theme_2s.includes(theme_2_name)){point+=parseInt(rowData[8])/2}
+			if (dom_names.includes(domi_name)){point+=parseInt(rowData[10])}
 			selectedData.push(no); // リストに行のデータを追加する
 			selectedMaxVal[no] = parseInt(rowData[1]);
 			if (wall.has(no)){tmp_selected_wall.push([point,no])}
@@ -559,69 +724,78 @@ function displaySelected() {
 	let ret = simulatedAnnealing(selectedData, selectedMaxVal, room_rank);
 	return ret;
 }
-  
 function cost(data_list, selected_maxval, room_rank) {
-	let base_point = 1;
-	let dormitory_val = 0;
-	let themes_val = 0;
-	let place_area = 0;
-	let floor_area = 0;
-	let wall_area = 0;
-	const countMap = new Map();
-	for (let i = 0; i < data_list.length; i++) {
-		let num = data_list[i];
-		countMap.set(num, (countMap.get(num) || 0) + 1);
-		let data = furnitures[num];
-		place_area += parseInt(data[4]) ? parseInt(data[4]) : 0;
-		floor_area += parseInt(data[5]) ? parseInt(data[5]) : 0;
-		wall_area += parseInt(data[6]) ? parseInt(data[6]) : 0;
-		if (data[11] == theme_1){themes_val+=parseFloat(data[9]) ? parseFloat(data[9]) : 0}
-		if (data[12] == theme_1){themes_val+=parseFloat(data[10]) ? parseFloat(data[10]) : 0}
-		if (data[11] == theme_2){themes_val+=parseFloat(data[9])/2 ? parseFloat(data[9])/2 : 0}
-		if (data[12] == theme_2){themes_val+=parseFloat(data[10])/2 ? parseFloat(data[10])/2 : 0}
-		if (data[13] == dom_name){dormitory_val+=parseInt(data[8]) ? parseInt(data[8]) : 0}
-	}
-	// プルダウンメニュー要素を取得
-	var selectElement = document.getElementById("dom_grade");
-	var selectedIndex = selectElement.selectedIndex;
-	var selectedValue = selectElement.options[selectedIndex].value;
-	var dom_line = dom_judge[selectedValue];
-	var ret_dom = 0;
+    let base_point = 1;
+    let place_area = 0;
+    let floor_area = 0;
+    let wall_area = 0;
+    const countMap = new Map();
+    // 各キャラクターごとのdormitory_val, themes_valを格納するためのオブジェクト
+    let dormitory_vals = {};
+    let themes_vals = {};
 
-	// プルダウンメニュー要素を取得
-	var selectElement = document.getElementById("theme_grade");
-	var selectedIndex = selectElement.selectedIndex;
-	var selectedValue = selectElement.options[selectedIndex].value;
-	var theme_line = theme_judge[selectedValue];
-	var ret_theme = 0;
+    // 初期化
+    selectedCharacters.forEach(character => dormitory_vals[character] = 0);
+    selectedCharacters.forEach(character => themes_vals[character] = 0);
 
-	if (wall_area > max_wall_num.get(room_rank)) {base_point *= 0.25**(wall_area - max_wall_num.get(room_rank))}
-	if (floor_area > max_floor_num.get(room_rank))  {base_point *= 0.25**(floor_area - max_floor_num.get(room_rank))}
-	if (place_area > max_floor_num.get(room_rank))  {base_point *= 0.25**(place_area - max_floor_num.get(room_rank))}
-	if (data_list.filter(element => frame.has(element)).length > 1) {base_point *= 0.25}
-	for (const key of countMap.keys()) {
-		if (countMap.get(key) > selected_maxval[key]) {base_point *= 0.25**(countMap.get(key) - selected_maxval[key])}
-	}
-	if (themes_val >= theme_line && dormitory_val >= dom_line && base_point >= 0.8){
-		// そのままいこう
-		ret_theme = themes_val/theme_line;
-		ret_dom = dormitory_val/dom_line;
-	} else {
-		if (themes_val >= theme_line){
-			ret_theme = 1;
-		} else {
-			ret_theme = themes_val/theme_line;
-		}
-		if (dormitory_val >= dom_line){
-			ret_dom = 1;
-		} else {
-			ret_dom = dormitory_val/dom_line;
-		}	
-	}
-	return base_point*ret_theme*ret_dom;
+    for (let i = 0; i < data_list.length; i++) {
+        let num = data_list[i];
+        countMap.set(num, (countMap.get(num) || 0) + 1);
+        let data = furnitures[num];
+        place_area += parseInt(data[4]) ? parseInt(data[4]) : 0;
+        floor_area += parseInt(data[5]) ? parseInt(data[5]) : 0;
+        wall_area += parseInt(data[6]) ? parseInt(data[6]) : 0;
+
+        // テーマとドミトリーのスコアを計算
+        selectedCharacters.forEach(character => {
+            let theme_1 = chara_data[character][1];
+            let theme_2 = chara_data[character][2];
+            let dom_name = chara_data[character][0];
+
+            // テーマのスコアを計算
+            if (theme_1 === data[11]) themes_vals[character] += parseFloat(data[9]) || 0;
+            if (theme_1 === data[12]) themes_vals[character] += parseFloat(data[10]) || 0;
+            if (theme_2 === data[11]) themes_vals[character] += (parseFloat(data[9]) || 0) / 2;
+            if (theme_2 === data[12]) themes_vals[character] += (parseFloat(data[10]) || 0) / 2;
+
+            // ドミトリーのスコアを計算
+            if (dom_name === data[13]) dormitory_vals[character] += parseInt(data[8]) || 0;
+        });
+    }
+
+    // 罰則を計算
+    if (wall_area > max_wall_num.get(room_rank)) { base_point *= 0.25 ** (wall_area - max_wall_num.get(room_rank)); }
+    if (floor_area > max_floor_num.get(room_rank)) { base_point *= 0.25 ** (floor_area - max_floor_num.get(room_rank)); }
+    if (place_area > max_floor_num.get(room_rank)) { base_point *= 0.25 ** (place_area - max_floor_num.get(room_rank)); }
+    if (data_list.filter(element => frame.has(element)).length > 1) { base_point *= 0.25; }
+    for (const key of countMap.keys()) {
+        if (countMap.get(key) > selected_maxval[key]) {
+            base_point *= 0.25 ** (countMap.get(key) - selected_maxval[key]);
+        }
+    }
+
+    // ドミトリーの評価ラインとスコアを計算
+    let final_dom_score = 1;
+
+    // テーマの評価ラインとスコアをキャラごとに計算
+    let final_theme_score = 1;
+    selectedCharacters.forEach(character => {
+        let dom_select = document.getElementById("dom_grade");
+        let dom_line = dom_judge[dom_select.options[dom_select.selectedIndex].value];
+        final_dom_score *= Math.min(dormitory_vals[character] / dom_line, 1);
+        let theme_select = document.getElementById("theme_grade");
+        let theme_line = theme_judge[theme_select.options[theme_select.selectedIndex].value];
+        let score = Math.min(themes_vals[character] / theme_line, 1);
+        final_theme_score *= score;
+    });
+	// console.log(base_point, final_dom_score, final_theme_score)
+    return base_point * final_dom_score * final_theme_score;
 }
+
+
   // 焼きなまし法
 function simulatedAnnealing(selected_data,selected_maxval,room_rank) {
+
 	const selectedproctype = document.querySelector('input[name="proctype"]:checked');
 	const proc_dict = {
 		0: 0.999,

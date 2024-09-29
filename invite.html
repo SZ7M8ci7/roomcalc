@@ -15,6 +15,7 @@
 	<title>招待部屋検討ツール</title>
 	<link rel="stylesheet" type="text/css" href="https://cdn.datatables.net/1.10.19/css/jquery.dataTables.css">
 	<link rel="stylesheet" type="text/css" href="style.css">
+	<link rel="stylesheet" type="text/css" href="style_invite.css">
 	<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 	<script type="text/javascript" src="https://cdn.datatables.net/1.10.19/js/jquery.dataTables.js"></script>
 	<link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.15.1/css/all.css">
@@ -39,34 +40,28 @@
 </head>
 <body>
 	<h1>招待部屋検討ツール</h1>
-	<select id="chara">
-		<option value="riddle">リドル</option>
-		<option value="ace">エース</option>
-		<option value="deuce">デュース</option>
-		<option value="trey">トレイ</option>
-		<option value="cater">ケイト</option>
-		<option value="leona">レオナ</option>
-		<option value="jack">ジャック</option>
-		<option value="ruggie">ラギー</option>
-		<option value="azul">アズール</option>
-		<option value="jade">ジェイド</option>
-		<option value="floyd">フロイド</option>
-		<option value="kalim">カリム</option>
-		<option value="jamil">ジャミル</option>
-		<option value="vil">ヴィル</option>
-		<option value="epel">エペル</option>
-		<option value="rook">ルーク</option>
-		<option value="idia">イデア</option>
-		<option value="ortho">オルト</option>
-		<option value="malleus">マレウス</option>
-		<option value="silver">シルバー</option>
-		<option value="sebek">セベク</option>
-		<option value="lilia">リリア</option>
-		<option value="grim">グリム</option>
-		<option value="crowley">クロウリー</option>
-		<option value="crewel">クルーウェル</option>
-		
-	</select>
+	<div class="selection-container">
+        <!-- キャラクター選択ボタン -->
+        <button onclick="openModal()">キャラクター選択</button>
+        <span id="selectedCharDisplay">選択中: なし</span>
+    </div>
+
+    <!-- モーダル -->
+    <div id="charaModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <span class="close" onclick="closeModal()">&times;</span>
+                <h2>キャラクターを選択</h2>
+				<!-- 選択解除ボタン -->
+                <button id="clearSelection" class="clear-button" onclick="clearSelections()">選択を解除</button>
+            </div>
+            <div class="modal-body">
+                <div id="charaList">
+                </div>
+            </div>
+        </div>
+    </div>
+
 	<select id="dom_grade">
 		<option value="excellent">寮Excellent</option>
 		<option value="great">寮Great</option>
@@ -90,7 +85,7 @@
 		<div class="tab" data-tab="tab3">計算設定</div>
 		<div class="tab" data-tab="tab4">状態操作</div>
 		<div class="tab" data-tab="tab5">使い方等</div>
-	</div>	
+	</div>
 	<div>
 		<div class="tabContent active" data-tab="tab1Content">
 			<div class="marginmid">
@@ -122,10 +117,12 @@
 			</div>
 		</div>
 		<div class="tabContent" data-tab="tab2Content">
-			<div class="marginmid">
+			<div class="horizontalContainer marginmid">
 				<div id="selectedRows"></div>
+				<div id="statsDetail"></div>
+				<div id="themeDetail"></div>
 			</div>
-		</div>
+		</div>		
 		<div class="tabContent" data-tab="tab3Content">
 			<div class="marginmid">
 				<div class="settings">
