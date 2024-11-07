@@ -143,7 +143,12 @@ $(document).ready(function() {
 		lines.push(document.getElementById('rankInput').value);
 		lines.push(document.querySelector('input[name="proctype"]:checked').value);
 		lines.push(document.getElementById("trynum").value);
-		lines.push(document.getElementById('chara').value);
+		// チェックボックスの状態を取得
+		const selectedCharacters = Array.from(document.querySelectorAll('#charaList input[type="checkbox"]:checked'))
+			.map(checkbox => checkbox.value);
+		lines.push(selectedCharacters.join(",")); // 選択されたキャラクターをCSV形式で保存
+
+
 		lines.push(document.getElementById('dom_grade').value);
 		lines.push(document.getElementById('theme_grade').value);
 		
@@ -162,7 +167,13 @@ $(document).ready(function() {
 		if (lines[3] == '1'){radios[1].checked = true;}
 		if (lines[3] == '2'){radios[2].checked = true;}
 		$("#trynum").val(lines[4]);
-		$("#chara").val(lines[5]);
+		// チェックボックスの状態を復元
+		const selectedCharacters = lines[5].split(",");
+		document.querySelectorAll('#charaList input[type="checkbox"]').forEach(checkbox => {
+			checkbox.checked = selectedCharacters.includes(checkbox.value);
+		});
+		updateSelectedCharacters(); // 選択状態を表示に反映
+
 		$("#dom_grade").val(lines[6]);
 		$("#theme_grade").val(lines[7]);
 		var checkboxes = $('input[type="number"]'); // 全てのチェックボックスを取得
