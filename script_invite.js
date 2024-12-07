@@ -135,6 +135,7 @@ $(document).ready(function() {
         });
       });
 	$("#btn-stats-out").click(function(){
+		resetFilter();
 		// チェックボックスの状態を取得
 		const checkboxes = document.querySelectorAll('input[type="number"]');
 		var lines = [];
@@ -160,6 +161,7 @@ $(document).ready(function() {
 		$("#text-stats").val(lines.join("\n")); // テキストエリアに設定内容を出力する
 	});	
 	$("#btn-stats-save").click(function(){
+		resetFilter();
 		var lines = $("#text-stats").val().split("\n"); // テキストエリアの値を1行ずつ取得
 		$("#rankInput").val(lines[2]);
 		var radios = document.getElementsByName("proctype");
@@ -214,7 +216,6 @@ $(document).ready(function() {
 					if (room_rank > max_room_rank) { // 最大のroom_rankを更新
 						max_room_rank = room_rank;
 					}
-					const bonus_map = new Map();
 					max_furniture_num.set(room_rank,parseInt(row_data[1]))
 					max_floor_num.set(room_rank,parseInt(row_data[3]))
 					max_wall_num.set(room_rank,parseInt(row_data[5]))
@@ -238,7 +239,7 @@ $(document).ready(function() {
                 "autoWidth": false,
 				"columnDefs": [
 					{ "targets": [0,12,13,14], "className": "hidden" },
-					{ "orderable": false, "targets": [0] }
+					{ "orderable": false, "targets": [0,1,2,3,4,5,6,7,8,9,10,11,12,13,14] }
 				]				
             });
 			
@@ -442,6 +443,7 @@ let  theme_1s = [];
 let  theme_2s = [];
 let selectedCharacters = [];
 async function calcstart(){
+	resetFilter();
 	dom_names = [];
 	theme_1s = [];
 	theme_2s = [];
@@ -970,6 +972,15 @@ function saveInputState() {
 		  inputs[i].value = localStorage.getItem(iid);
 	  }
 	}
+  }
+  
+  function resetFilter() {
+
+	for (let i = 1; i <= 14; i++) {
+		$('#filter-col'+i.toString()).val(''); // フィルター入力を空にする
+		table.column(i-1).search(''); // カラム4の検索条件をクリア
+	}
+	table.draw();
   }
   window.onload = function() {
 	// ボタンの要素を取得する

@@ -94,6 +94,7 @@ $(document).ready(function() {
 		$("#text-area").val(lines.join("\n")); // テキストエリアに残った行を再度設定する
 	});
 	$("#btn-stats-out").click(function(){
+		resetFilter();
 		// チェックボックスの状態を取得
 		const checkboxes = document.querySelectorAll('input[type="checkbox"]');
 		var lines = [];
@@ -122,6 +123,7 @@ $(document).ready(function() {
 		$("#text-stats").val(lines.join("\n")); // テキストエリアに設定内容を出力する
 	});	
 	$("#btn-stats-save").click(function(){
+		resetFilter();
 		var lines = $("#text-stats").val().split("\n"); // テキストエリアの値を1行ずつ取得
 		$("#rankInput").val(lines[2]);
 		var radios = document.getElementsByName("proctype");
@@ -217,7 +219,7 @@ $(document).ready(function() {
                 "autoWidth": false,
 				"columnDefs": [
 					{ "targets": [2, 6, 7, 8, 9, 10, 11, 12], "className": "hidden" },
-					{ "orderable": false, "targets": [0,1] }
+					{ "orderable": false, "targets": [0,1,3,4,5,13,14,15,16] }
 				]				
             });
 			$('#myTable thead th input[type="text"]').on('click', function(e) {
@@ -406,6 +408,7 @@ function dummyfunction() {
 }
 		
 async function calcstart(){
+	resetFilter();
 	const messageSpan = document.getElementById("processing");
 	let trynum = parseInt(document.getElementById("trynum").value)
 	seed = parseInt(document.getElementById("seed").value)
@@ -751,6 +754,20 @@ function saveCheckboxState() {
 	  cid = cid.replace('オンボロ風の小さい机','オンボロ風の小さな机');
 	  checkboxes[i].checked = (localStorage.getItem(cid) === 'true' || localStorage.getItem(checkboxes[i].id) === 'true');
 	}
+  }
+  
+  function resetFilter() {
+
+    $('#filter-all-select').prop('checked', false);
+    $('#filter-must-select').prop('checked', false);
+    $('#filter-all-nonselect').prop('checked', false);
+    $('#filter-must-nonselect').prop('checked', false);
+
+	for (let i = 4; i <= 17; i++) {
+		$('#filter-col'+i.toString()).val(''); // フィルター入力を空にする
+		table.column(i-1).search(''); // カラム4の検索条件をクリア
+	}
+	table.draw();
   }
   window.onload = function() {
 	restoreCheckboxState();

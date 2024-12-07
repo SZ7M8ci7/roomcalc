@@ -303,3 +303,7 @@ p {
 .nightRavenCollege {
     background-color: #eef5ff; /* ナイトレイブンカレッジ */
 }
+/* DataTablesの検索ウィンドウを非表示にする */
+.dataTables_filter {
+    display: none;
+}
