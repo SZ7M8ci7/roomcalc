@@ -45,6 +45,7 @@ with open('data.csv', mode='w', encoding='UTF-8') as file:
         if row[1] == '' or row[1] == '名前':
             continue
         line = ','.join([str(count)]+row[1:15]+[row[53]]) + '\r\n'
+        line.replace('小型雑貨', '小物雑貨')
         file.write(line)
         count+=1
 
