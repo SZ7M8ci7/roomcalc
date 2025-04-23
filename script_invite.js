@@ -825,7 +825,7 @@ function simulatedAnnealing(selected_data,selected_maxval,room_rank) {
 	const initialTemperature = 1000; // 初期温度
 	const finalTemperature = 0.01; // 終了温度
 	coolingRate = proc_dict[coolingRate]; // 冷却率
-	let currentSolution = initializeSolution(room_rank); // 解の初期化
+	let currentSolution = initializeSolution(room_rank, selected_maxval); // 解の初期化
 
 	let currentCost = cost(currentSolution,selected_maxval,room_rank);
 	let bestSolution = currentSolution.slice(); // 最適解
@@ -870,13 +870,22 @@ function simulatedAnnealing(selected_data,selected_maxval,room_rank) {
 }
 
 // 初期解の生成
-function initializeSolution(room_rank) {
+function initializeSolution(room_rank, selected_maxval) {
 	var max_furniture = max_furniture_num.get(room_rank)
 	var ret = chooseRandomElements(selected_floor_list,room_rank >= 31 ? 2 : 1).concat(
 		chooseRandomElements(selected_wall_list,room_rank >= 31 ? 2 : 1)
 		,chooseRandomElements(selected_front_top_list,room_rank >= 31 ? 4 : 2)
 		,chooseRandomElements(selected_front_bot_list,room_rank >= 31 ? 4 : 2));
-	ret = ret.concat(chooseRandomElements(selected_other_list,max_furniture-ret.length));
+	var remain_furniture_num = max_furniture - ret.length;
+	for (let i = 0; i < selected_other_list.length; i++) {
+		const furniture_no = selected_other_list[i];
+		for (let j = 0; j < selected_maxval[furniture_no]; j++){
+			if (remain_furniture_num > 0) {
+				ret.push(furniture_no)
+				remain_furniture_num--;	
+			}
+		}
+	}
 	return ret;
 }
 
