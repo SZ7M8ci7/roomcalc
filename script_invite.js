@@ -490,13 +490,22 @@ async function calcstart(){
 	output+='<div style="display: flex;">';
 	let copy_txt = '';
 	let ret1 = [];
-	for (let cur of ret[1]){
+	for (let cur of ret[1]) {
 		ret1.push(furnitures[cur][1]);
 	}
-	ret1.sort();
-	for (let cur of ret1){
-		output+=cur+'<br>';
-		copy_txt+=cur+'\r\n';
+	let countMap = {};
+	for (let item of ret1) {
+		countMap[item] = (countMap[item] || 0) + 1;
+	}
+	let sortedKeys = Object.keys(countMap).sort();
+	for (let key of sortedKeys) {
+		if (countMap[key] === 1) {
+			output += `${key}<br>`;
+			copy_txt += `${key}\r\n`;
+		} else {
+			output += `${key}\t${countMap[key]}<br>`;
+			copy_txt += `${key}\t${countMap[key]}\r\n`;
+		}
 	}
 
 	output+='</div>';
