@@ -801,6 +801,7 @@ function cost(data_list, selected_maxval, room_rank) {
 
     // テーマの評価ラインとスコアをキャラごとに計算
     let final_theme_score = 1;
+	let total_theme_rate = 1;
     selectedCharacters.forEach(character => {
         let dom_select = document.getElementById("dom_grade");
         let dom_line = dom_judge[dom_select.options[dom_select.selectedIndex].value];
@@ -808,9 +809,13 @@ function cost(data_list, selected_maxval, room_rank) {
         let theme_select = document.getElementById("theme_grade");
         let theme_line = theme_judge[theme_select.options[theme_select.selectedIndex].value];
         let score = Math.min(themes_vals[character] / theme_line, 1);
+		total_theme_rate *= themes_vals[character] / theme_line;
         final_theme_score *= score;
     });
 	// console.log(base_point, final_dom_score, final_theme_score)
+	if (base_point * final_dom_score * final_theme_score >= 1) {
+		return base_point * final_dom_score * total_theme_rate;
+	}
     return base_point * final_dom_score * final_theme_score;
 }
 
