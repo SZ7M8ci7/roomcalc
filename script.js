@@ -437,7 +437,6 @@ async function calcstart(){
 	let copy_txt = '';
 	let ret1 = [];
 	for (let cur of ret[1]){
-		console.log(furnitures[cur]);
 		ret1.push(furnitures[cur][2]);
 	}
 	const dormOrder = [
