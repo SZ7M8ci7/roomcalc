@@ -58,13 +58,20 @@ rows = worksheet.get_all_values()
 # 取得したデータを処理する
 with open('series.csv', mode='w', encoding='UTF-8') as file:
     count = 0
+    lines = []
     for row in rows:
-        count+=1
+        count += 1
         if count <= 22:
             continue
         if 'シリーズ' in row[92]:
             line = ','.join(row[92:92+17]) + '\r\n'
-            file.write(line)
+            lines.append(line)
+
+    if len(lines) <= 3:
+        raise ValueError('データ行数が3行以下のため終了します。')
+
+    file.writelines(lines)
+
 
 with open('roomrank.csv', mode='w', encoding='UTF-8') as file:
     count = 0
