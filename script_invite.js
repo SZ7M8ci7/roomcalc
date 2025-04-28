@@ -489,22 +489,47 @@ async function calcstart(){
 	<div id="details1" class="details textarea-wrapper">';
 	output+='<div style="display: flex;">';
 	let copy_txt = '';
+	const dormOrder = [
+		'ハーツラビュル', 'サバナクロー', 'オクタヴィネル', 'スカラビア',
+		'ポムフィオーレ', 'イグニハイド', 'ディアソムニア', 'ナイトレイブンカレッジ', 'なし'
+	];
+	const typeOrder = [
+		'家具：机', '家具：椅子', '家具：収納', '家具：その他',
+		'装飾：パーティション', '装飾：壁装飾', '装飾：写真', '装飾：ラグ',
+		'雑貨：小型雑貨', '雑貨：小物雑貨', '雑貨：大型雑貨', '雑貨：衣装',
+		'内観・外観：床', '内観・外観：壁紙', '内観・外観：前景'
+	];
+	
+	const dormOrderMap = Object.fromEntries(dormOrder.map((dorm, index) => [dorm, index]));
+	const typeOrderMap = Object.fromEntries(typeOrder.map((type, index) => [type, index]));
 	let ret1 = [];
 	for (let cur of ret[1]) {
-		ret1.push(furnitures[cur][1]);
+		ret1.push(cur);
 	}
 	let countMap = {};
 	for (let item of ret1) {
 		countMap[item] = (countMap[item] || 0) + 1;
 	}
-	let sortedKeys = Object.keys(countMap).sort();
+
+	let sortedKeys = Object.keys(countMap);
+	sortedKeys.sort((a, b) => {
+		const dormA = furnitures[a][13] ?? 'なし';
+		const dormB = furnitures[b][13] ?? 'なし';
+		const typeA = furnitures[a][3];
+		const typeB = furnitures[b][3];
+		
+		if (dormOrderMap[dormA] !== dormOrderMap[dormB]) {
+			return dormOrderMap[dormA] - dormOrderMap[dormB];
+		}
+		return typeOrderMap[typeA] - typeOrderMap[typeB];
+	});
 	for (let key of sortedKeys) {
 		if (countMap[key] === 1) {
-			output += `${key}<br>`;
-			copy_txt += `${key}\r\n`;
+			output += `${furnitures[key][1]}<br>`;
+			copy_txt += `${furnitures[key][1]}\r\n`;
 		} else {
-			output += `${key}\t${countMap[key]}<br>`;
-			copy_txt += `${key}\t${countMap[key]}\r\n`;
+			output += `${furnitures[key][1]}\t${countMap[key]}<br>`;
+			copy_txt += `${furnitures[key][1]}\t${countMap[key]}\r\n`;
 		}
 	}
 

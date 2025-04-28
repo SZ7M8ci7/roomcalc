@@ -437,12 +437,35 @@ async function calcstart(){
 	let copy_txt = '';
 	let ret1 = [];
 	for (let cur of ret[1]){
-		ret1.push(furnitures[cur][3]);
+		console.log(furnitures[cur]);
+		ret1.push(furnitures[cur][2]);
 	}
-	ret1.sort();
+	const dormOrder = [
+		'ハーツラビュル', 'サバナクロー', 'オクタヴィネル', 'スカラビア',
+		'ポムフィオーレ', 'イグニハイド', 'ディアソムニア', 'ナイトレイブンカレッジ', 'なし'
+	];
+	const typeOrder = [
+		'家具：机', '家具：椅子', '家具：収納', '家具：その他',
+		'装飾：パーティション', '装飾：壁装飾', '装飾：写真', '装飾：ラグ',
+		'雑貨：小型雑貨', '雑貨：小物雑貨', '雑貨：大型雑貨', '雑貨：衣装',
+		'内観・外観：床', '内観・外観：壁紙', '内観・外観：前景'
+	];
+	const dormOrderMap = Object.fromEntries(dormOrder.map((dorm, index) => [dorm, index]));
+	const typeOrderMap = Object.fromEntries(typeOrder.map((type, index) => [type, index]));
+	ret1.sort((a, b) => {
+		const dormA = furnitures[a][15] ?? 'なし';
+		const dormB = furnitures[b][15] ?? 'なし';
+		const typeA = furnitures[a][5];
+		const typeB = furnitures[b][5];
+		
+		if (dormOrderMap[dormA] !== dormOrderMap[dormB]) {
+			return dormOrderMap[dormA] - dormOrderMap[dormB];
+		}
+		return typeOrderMap[typeA] - typeOrderMap[typeB];
+	});
 	for (let cur of ret1){
-		output+=cur+'<br>';
-		copy_txt+=cur+'\r\n';
+		output+=furnitures[cur][3]+'<br>';
+		copy_txt+=furnitures[cur][3]+'\r\n';
 	}
 	output+='</div>';
 	$("#selectedRows").html(output);
