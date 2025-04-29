@@ -629,7 +629,8 @@ function simulatedAnnealing(selected_data,must_data,room_rank) {
 	const proc_dict = {
 		0: 0.999,
 		1: 0.9997,
-		2: 0.9999
+		2: 0.9999,
+		3: 0.999999
 	  };
     let coolingRate = 0;
 	if (selectedproctype) {
