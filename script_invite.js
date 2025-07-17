@@ -272,25 +272,13 @@ $(document).ready(function() {
 
                 }
             }
-			for (let i = 0; i < furnitures.length; i++) {
-				let data = furnitures[i];
-				if (data[3] === "内観・外観：壁紙") {
-				  wall.add(i);
-				} else if (data[3] === "内観・外観：床") {
-				  floor.add(i);
-				} else if (data[3] === "内観・外観：前景") {
-					if (data[1].includes("フレーム")) {
-						frame.add(i);
-						other.add(i);
-					} else if (data[1].includes("（上）")) {
-						front_top.add(i);
-					} else {
-						front_bot.add(i);
-					}
-				} else {
-				  other.add(i);
-				}
-			  }
+            
+            // 手入力家具をメインテーブルに統合（furnitures配列も同時に更新）
+            integrateCustomFurnitureWithMainTable();
+            
+            // カテゴリ別セットを再作成
+            updateCategorySets();
+			
 
             table.draw();
 			restoreInputState();
@@ -523,6 +511,7 @@ async function calcstart(){
 		}
 		return typeOrderMap[typeA] - typeOrderMap[typeB];
 	});
+	
 	for (let key of sortedKeys) {
 		if (countMap[key] === 1) {
 			output += `${furnitures[key][1]}<br>`;
@@ -967,6 +956,589 @@ function calculateAcceptanceProbability(currentCost, newCost, temperature) {
 	return delta*temperature/1000;
 }
 
+// 面積自動計算機能
+function calculateAreas(category, squares) {
+    let installArea = 0;
+    let floorArea = 0;
+    let wallArea = 0;
+    
+    const squareNum = parseInt(squares) || 0;
+    
+    if (category === "装飾：写真" || category === "装飾：壁装飾") {
+        // 壁面積 = マス数、設置面積 = 0、床面積 = 0
+        wallArea = squareNum;
+        installArea = 0;
+        floorArea = 0;
+    } else if (category === "装飾：ラグ") {
+        // 床面積 = マス数、設置面積 = 0、壁面積 = 0
+        floorArea = squareNum;
+        installArea = 0;
+        wallArea = 0;
+    } else {
+        // その他すべて → 設置面積 = マス数、床面積 = 0、壁面積 = 0
+        installArea = squareNum;
+        floorArea = 0;
+        wallArea = 0;
+    }
+    
+    return {
+        installArea: installArea,
+        floorArea: floorArea,
+        wallArea: wallArea
+    };
+}
+
+// 分類に基づいて面積を計算する関数
+function calculateAreas(category, squares) {
+    const squaresNum = parseInt(squares) || 0;
+    let installArea = 0;
+    let floorArea = 0;
+    let wallArea = 0;
+
+    // design.mdの面積自動計算ロジックに従って実装
+    if (category === '装飾：写真' || category === '装飾：壁装飾') {
+        // 装飾：写真、装飾：壁装飾 → 壁面積 = マス数、設置面積 = 0、床面積 = 0
+        wallArea = squaresNum;
+        installArea = 0;
+        floorArea = 0;
+    } else if (category === '装飾：ラグ') {
+        // 装飾：ラグ → 床面積 = マス数、設置面積 = 0、壁面積 = 0
+        floorArea = squaresNum;
+        installArea = 0;
+        wallArea = 0;
+    } else {
+        // その他すべて → 設置面積 = マス数、床面積 = 0、壁面積 = 0
+        installArea = squaresNum;
+        floorArea = 0;
+        wallArea = 0;
+    }
+
+    return {
+        install: installArea,
+        floor: floorArea,
+        wall: wallArea
+    };
+}
+
+// 分類変更時の面積計算
+function onCategoryChange() {
+    const category = document.getElementById('furnitureCategory').value;
+    const squares = document.getElementById('squares').value;
+    
+    if (category && squares) {
+        const areas = calculateAreas(category, squares);
+        // 面積フィールドが存在する場合は更新（後のタスクで実装予定）
+        console.log('計算された面積:', areas);
+    }
+}
+
+// マス数変更時の面積再計算
+function onSquaresChange() {
+    const category = document.getElementById('furnitureCategory').value;
+    const squares = document.getElementById('squares').value;
+    
+    if (category && squares) {
+        const areas = calculateAreas(category, squares);
+        // 面積フィールドが存在する場合は更新（後のタスクで実装予定）
+        console.log('計算された面積:', areas);
+    }
+}
+
+// ローカルストレージに手入力家具データを保存する機能
+function saveCustomFurnitureToLocalStorage(furnitureData) {
+    try {
+        let customFurniture = JSON.parse(localStorage.getItem('customFurniture') || '[]');
+        
+        // 新規追加の場合はIDを生成
+        if (!furnitureData.id) {
+            furnitureData.id = Date.now().toString() + '_' + Math.random().toString(36).substr(2, 9);
+        }
+        
+        // 既存データの更新か新規追加かを判定
+        const existingIndex = customFurniture.findIndex(item => item.id === furnitureData.id);
+        
+        if (existingIndex >= 0) {
+            // 既存データを更新
+            customFurniture[existingIndex] = furnitureData;
+        } else {
+            // 新規データを追加
+            customFurniture.push(furnitureData);
+        }
+        
+        localStorage.setItem('customFurniture', JSON.stringify(customFurniture));
+        return true;
+    } catch (error) {
+        console.error('ローカルストレージへの保存に失敗しました:', error);
+        return false;
+    }
+}
+
+// ローカルストレージから手入力家具データを読み込む機能
+function loadCustomFurnitureFromLocalStorage() {
+    try {
+        const customFurniture = JSON.parse(localStorage.getItem('customFurniture') || '[]');
+        return customFurniture;
+    } catch (error) {
+        console.error('ローカルストレージからの読み込みに失敗しました:', error);
+        return [];
+    }
+}
+
+// 手入力家具データを削除する機能
+function deleteCustomFurnitureFromLocalStorage(furnitureId) {
+    try {
+        let customFurniture = JSON.parse(localStorage.getItem('customFurniture') || '[]');
+        customFurniture = customFurniture.filter(item => item.id !== furnitureId);
+        localStorage.setItem('customFurniture', JSON.stringify(customFurniture));
+        return true;
+    } catch (error) {
+        console.error('ローカルストレージからの削除に失敗しました:', error);
+        return false;
+    }
+}
+
+// バリデーション機能
+function validateCustomFurniture(formData, editingId = null) {
+    const errors = [];
+    
+    // 必須フィールドチェック
+    if (!formData.name || formData.name.trim() === '') {
+        errors.push('名称は必須です。');
+    }
+    
+    if (!formData.category || formData.category === '') {
+        errors.push('分類は必須です。');
+    }
+    
+    // 数値範囲チェック
+    if (formData.theme1Value < 0 || formData.theme1Value > 50) {
+        errors.push('テーマ１値は0-50の範囲で入力してください。');
+    }
+    
+    if (formData.theme2Value < 0 || formData.theme2Value > 50) {
+        errors.push('テーマ２値は0-50の範囲で入力してください。');
+    }
+    
+    if (formData.dormValue < 0 || formData.dormValue > 50) {
+        errors.push('寮値は0-50の範囲で入力してください。');
+    }
+    
+    if (formData.squares < 0) {
+        errors.push('マス数は0以上で入力してください。');
+    }
+    
+    // 重複チェック
+    const existingFurniture = loadCustomFurnitureFromLocalStorage();
+    const duplicateName = existingFurniture.find(item => 
+        item.name === formData.name && item.id !== editingId
+    );
+    
+    if (duplicateName) {
+        errors.push('同じ名称の家具が既に登録されています。');
+    }
+    
+    return errors;
+}
+
+// エラーメッセージ表示機能
+function displayValidationErrors(errors) {
+    const errorContainer = document.getElementById('validationErrors');
+    if (!errorContainer) {
+        // エラーメッセージ表示用のコンテナを作成
+        const container = document.createElement('div');
+        container.id = 'validationErrors';
+        container.className = 'validation-errors';
+        const form = document.getElementById('customFurnitureForm');
+        form.appendChild(container);
+    }
+    
+    const errorElement = document.getElementById('validationErrors');
+    
+    if (errors.length > 0) {
+        errorElement.innerHTML = '<ul>' + errors.map(error => `<li>${error}</li>`).join('') + '</ul>';
+        errorElement.style.display = 'block';
+    } else {
+        errorElement.style.display = 'none';
+    }
+}
+
+// フィールドのハイライト表示機能
+function highlightErrorFields(formData) {
+    // 全フィールドのハイライトをクリア
+    const fields = ['furnitureName', 'furnitureCategory', 'theme1Value', 'theme2Value', 'dormValue', 'squares'];
+    fields.forEach(field => {
+        const element = document.getElementById(field);
+        if (element) {
+            element.classList.remove('error-field');
+        }
+    });
+    
+    // エラーのあるフィールドをハイライト
+    if (!formData.name || formData.name.trim() === '') {
+        document.getElementById('furnitureName')?.classList.add('error-field');
+    }
+    
+    if (!formData.category || formData.category === '') {
+        document.getElementById('furnitureCategory')?.classList.add('error-field');
+    }
+    
+    if (formData.theme1Value < 0 || formData.theme1Value > 50) {
+        document.getElementById('theme1Value')?.classList.add('error-field');
+    }
+    
+    if (formData.theme2Value < 0 || formData.theme2Value > 50) {
+        document.getElementById('theme2Value')?.classList.add('error-field');
+    }
+    
+    if (formData.dormValue < 0 || formData.dormValue > 50) {
+        document.getElementById('dormValue')?.classList.add('error-field');
+    }
+    
+    if (formData.squares < 0) {
+        document.getElementById('squares')?.classList.add('error-field');
+    }
+}
+
+// 手入力家具一覧テーブルを更新する機能
+function updateCustomFurnitureTable() {
+    const customFurniture = loadCustomFurnitureFromLocalStorage();
+    const tableBody = document.getElementById('customFurnitureTableBody');
+    
+    if (!tableBody) {
+        console.error('テーブルのbody要素が見つかりません');
+        return;
+    }
+    
+    // テーブルをクリア
+    tableBody.innerHTML = '';
+    
+    if (customFurniture.length === 0) {
+        const emptyRow = document.createElement('tr');
+        emptyRow.innerHTML = '<td colspan="13" style="text-align: center;">登録された家具がありません</td>';
+        tableBody.appendChild(emptyRow);
+        return;
+    }
+    
+    // 各家具データをテーブル行として追加
+    customFurniture.forEach(furniture => {
+        const row = document.createElement('tr');
+        
+        const areas = calculateAreas(furniture.category, furniture.squares);
+        
+        row.innerHTML = `
+            <td>${furniture.name}</td>
+            <td>${furniture.category}</td>
+            <td>${furniture.theme1 || '－'}</td>
+            <td>${furniture.theme1Value || 0}</td>
+            <td>${furniture.theme2 || '－'}</td>
+            <td>${furniture.theme2Value || 0}</td>
+            <td>${furniture.dorm || 'なし'}</td>
+            <td>${furniture.dormValue || 0}</td>
+            <td>${furniture.squares}</td>
+            <td>${areas.install}</td>
+            <td>${areas.floor}</td>
+            <td>${areas.wall}</td>
+            <td>
+                <button onclick="deleteCustomFurniture('${furniture.id}')" class="delete-button">削除</button>
+            </td>
+        `;
+        
+        tableBody.appendChild(row);
+    });
+}
+
+// ページ読み込み時に手入力家具一覧を更新
+function initializeCustomFurnitureTable() {
+    updateCustomFurnitureTable();
+    // メインテーブルが存在する場合、手入力家具を統合
+    if (table) {
+        integrateCustomFurnitureWithMainTable();
+    }
+}
+
+// フォームリセット機能
+function resetCustomForm() {
+    const form = document.getElementById('customFurnitureForm');
+    if (form) {
+        form.reset();
+        
+        // 編集モードを解除
+        window.editingFurnitureId = null;
+        
+        // 保存ボタンのテキストを元に戻す
+        const saveButton = form.querySelector('.save-button');
+        if (saveButton) {
+            saveButton.textContent = '保存';
+        }
+        
+        // エラーメッセージとハイライトをクリア
+        displayValidationErrors([]);
+        const fields = ['furnitureName', 'furnitureCategory', 'theme1Value', 'theme2Value', 'dormValue', 'squares'];
+        fields.forEach(field => {
+            const element = document.getElementById(field);
+            if (element) {
+                element.classList.remove('error-field');
+            }
+        });
+    }
+}
+
+// 編集機能
+function editCustomFurniture(furnitureId) {
+    const customFurniture = loadCustomFurnitureFromLocalStorage();
+    const furniture = customFurniture.find(item => item.id === furnitureId);
+    
+    if (!furniture) {
+        alert('該当する家具が見つかりません。');
+        return;
+    }
+    
+    // フォームに既存データを読み込む
+    document.getElementById('furnitureName').value = furniture.name || '';
+    document.getElementById('furnitureCategory').value = furniture.category || '';
+    document.getElementById('theme1').value = furniture.theme1 || '';
+    document.getElementById('theme1Value').value = furniture.theme1Value || 0;
+    document.getElementById('theme2').value = furniture.theme2 || '';
+    document.getElementById('theme2Value').value = furniture.theme2Value || 0;
+    document.getElementById('dorm').value = furniture.dorm || '';
+    document.getElementById('dormValue').value = furniture.dormValue || 0;
+    document.getElementById('squares').value = furniture.squares || 0;
+    
+    // 編集モードフラグを設定
+    window.editingFurnitureId = furnitureId;
+    
+    // 保存ボタンのテキストを変更
+    const saveButton = document.querySelector('.save-button');
+    if (saveButton) {
+        saveButton.textContent = '更新';
+    }
+    
+    // エラーメッセージをクリア
+    displayValidationErrors([]);
+}
+
+// 削除機能
+function deleteCustomFurniture(furnitureId) {
+    const customFurniture = loadCustomFurnitureFromLocalStorage();
+    const furniture = customFurniture.find(item => item.id === furnitureId);
+    
+    if (!furniture) {
+        alert('該当する家具が見つかりません。');
+        return;
+    }
+    
+    // 削除確認ダイアログ
+    const confirmMessage = `「${furniture.name}」を削除してもよろしいですか？`;
+    if (confirm(confirmMessage)) {
+        const success = deleteCustomFurnitureFromLocalStorage(furnitureId);
+        
+        if (success) {
+            // テーブルを更新
+            updateCustomFurnitureTable();
+            
+            // 家具選択テーブルからも削除（furnitures配列も同時に更新）
+            integrateCustomFurnitureWithMainTable();
+            
+            // カテゴリ別セットを更新
+            updateCategorySets();
+            
+            // 編集中のアイテムが削除された場合、フォームをリセット
+            if (window.editingFurnitureId === furnitureId) {
+                resetCustomForm();
+            }
+            
+            alert('家具を削除しました。');
+        } else {
+            alert('家具の削除に失敗しました。');
+        }
+    }
+}
+
+// フォーム送信時の処理
+function handleCustomFurnitureSubmit(event) {
+    event.preventDefault();
+    
+    // フォームデータを取得
+    const formData = {
+        name: document.getElementById('furnitureName').value.trim(),
+        category: document.getElementById('furnitureCategory').value,
+        theme1: document.getElementById('theme1').value,
+        theme1Value: parseInt(document.getElementById('theme1Value').value) || 0,
+        theme2: document.getElementById('theme2').value,
+        theme2Value: parseInt(document.getElementById('theme2Value').value) || 0,
+        dorm: document.getElementById('dorm').value,
+        dormValue: parseInt(document.getElementById('dormValue').value) || 0,
+        squares: parseInt(document.getElementById('squares').value) || 0
+    };
+    
+    // バリデーション
+    const errors = validateCustomFurniture(formData, window.editingFurnitureId);
+    
+    if (errors.length > 0) {
+        displayValidationErrors(errors);
+        highlightErrorFields(formData);
+        return;
+    }
+    
+    // 面積を自動計算
+    const areas = calculateAreas(formData.category, formData.squares);
+    
+    // 完全な家具データオブジェクトを作成
+    const furnitureData = {
+        ...formData,
+        installArea: areas.install,
+        floorArea: areas.floor,
+        wallArea: areas.wall,
+        isCustom: true
+    };
+    
+    // 編集モードの場合はIDを設定
+    if (window.editingFurnitureId) {
+        furnitureData.id = window.editingFurnitureId;
+    }
+    
+    // データを保存
+    const success = saveCustomFurnitureToLocalStorage(furnitureData);
+    
+    if (success) {
+        // テーブルを更新
+        updateCustomFurnitureTable();
+        
+        // 家具選択テーブルに手入力家具を統合（furnitures配列も同時に更新）
+        integrateCustomFurnitureWithMainTable();
+        
+        // カテゴリ別セットを更新
+        updateCategorySets();
+        
+        // フォームをリセット
+        resetCustomForm();
+        
+        // 成功メッセージ
+        const message = window.editingFurnitureId ? '家具を更新しました。' : '家具を保存しました。';
+        alert(message);
+        
+        displayValidationErrors([]);
+    } else {
+        alert('家具の保存に失敗しました。');
+    }
+}
+
+
+// 手入力家具を家具選択テーブルに統合する機能
+function integrateCustomFurnitureWithMainTable() {
+    if (!table) {
+        console.warn('メインテーブルが初期化されていません。');
+        return;
+    }
+    
+    // 既存のカスタム家具行を削除
+    table.rows().nodes().to$().each(function(index, row) {
+        const rowData = table.row(row).data();
+        if (rowData && rowData[2] && rowData[2].toString().includes('[カスタム]')) {
+            table.row(row).remove();
+        }
+    });
+    
+    // furnitures配列からもカスタム家具を削除
+    furnitures = furnitures.filter(furniture => furniture[2] !== 'カスタム');
+    
+    // 手入力家具データを取得
+    const customFurniture = loadCustomFurnitureFromLocalStorage();
+    
+    // 各手入力家具をテーブルに追加
+    customFurniture.forEach((furniture, index) => {
+        const areas = calculateAreas(furniture.category, furniture.squares);
+        
+        // furnitures配列の末尾のインデックスを取得
+        const furnitureIndex = furnitures.length;
+        
+        // 家具データを作成（furnitures配列に追加用）- 既存CSVデータ構造に合わせて配置
+        const furnitureData = [
+            furnitureIndex,                    // 0: No (配列インデックス)
+            furniture.name,                    // 1: 名称
+            'カスタム',                       // 2: レア
+            furniture.category,                // 3: 分類
+            areas.install,                     // 4: 設置面積
+            areas.floor,                       // 5: 床面積
+            areas.wall,                        // 6: 壁面積
+            0,                                 // 7: (未使用)
+            (furniture.dorm && furniture.dorm !== 'なし' && furniture.dorm !== '') ? (furniture.dormValue || 0) : '',      // 8: 寮値
+            (furniture.theme1 && furniture.theme1 !== '－' && furniture.theme1 !== '') ? (furniture.theme1Value || 0) : '',  // 9: テーマ1値
+            (furniture.theme2 && furniture.theme2 !== '－' && furniture.theme2 !== '') ? (furniture.theme2Value || 0) : '',  // 10: テーマ2値
+            furniture.theme1 || '',            // 11: テーマ1
+            furniture.theme2 || '',            // 12: テーマ2
+            furniture.dorm || '',              // 13: 寮
+            'カスタム家具',                    // 14: シリーズ
+            50                                  // 15: 作成可能数
+        ];
+        
+        // furnitures配列に追加
+        furnitures.push(furnitureData);
+        
+        // テーブル表示用のデータを作成
+        var add_data = [];
+        add_data.push(furnitureIndex); // インデックスをNoとして使用
+        
+        // 個数入力フィールド
+        var max_num = "<td><input type='number' class='have_val' id = 'max_num" + furnitureIndex + "' name='max_num' value='0' min='0' max='99'></td>";
+        add_data.push(max_num);
+        
+        add_data.push(furniture.name + " [カスタム]"); // 名称（カスタム識別子付き）
+        add_data.push('カスタム');  // レア
+        add_data.push(furniture.category);  // 分類
+        add_data.push(furniture.theme1 || ''); // テーマ1
+        add_data.push(furniture.theme1Value || 0);  // テーマ1値
+        add_data.push(furniture.theme2 || ''); // テーマ2
+        add_data.push(furniture.theme2Value || 0);  // テーマ2値
+        add_data.push(furniture.dorm || ''); // 寮
+        add_data.push(furniture.dormValue || 0);  // 寮値
+        add_data.push('カスタム家具'); // シリーズ
+        add_data.push(areas.install);  // 設置
+        add_data.push(areas.floor);  // 床
+        add_data.push(areas.wall); // 壁
+        
+        table.row.add(add_data);
+    });
+    
+    // テーブルを再描画
+    table.draw();
+}
+
+
+
+// カテゴリ別セットを更新する機能
+function updateCategorySets() {
+    // セットをリセット
+    wall.clear();
+    floor.clear();
+    front_top.clear();
+    front_bot.clear();
+    other.clear();
+    frame.clear();
+    
+    // furnitures配列でセットを再作成
+    for (let i = 0; i < furnitures.length; i++) {
+        let data = furnitures[i];
+        
+        if (data[3] === "内観・外観：壁紙") {
+            wall.add(i);
+        } else if (data[3] === "内観・外観：床") {
+            floor.add(i);
+        } else if (data[3] === "内観・外観：前景") {
+            if (data[1].includes("フレーム")) {
+                frame.add(i);
+                other.add(i);
+            } else if (data[1].includes("（上）")) {
+                front_top.add(i);
+            } else {
+                front_bot.add(i);
+            }
+        } else {
+            other.add(i);
+        }
+    }
+}
+
 function saveInputState() {
 	// 数値入力フィールドの値を取得してキャッシュに保存
 	const inputs = document.querySelectorAll('input[type="number"]');
@@ -1049,4 +1621,7 @@ function saveInputState() {
 		button.style.display = 'none';
 	}
 	});
+	
+	// 手入力家具テーブルを初期化
+	initializeCustomFurnitureTable();
   };
