@@ -5,7 +5,7 @@ name: Python application
 
 on:
   schedule:
-    - cron: '*/15 * * * *' # 定期実行したい時刻を cron 形式で指定
+    - cron: '*/15 5 5 5 5' # 定期実行したい時刻を cron 形式で指定
   workflow_dispatch:
 jobs:
   build:
