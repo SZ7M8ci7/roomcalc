@@ -147,13 +147,14 @@
 		<option value="normal">無し</option>
 	</select>
 	<button onclick="calcstart();gtag('event', 'click_invite', {'event_category': '計算実行','event_label': '実行','value': '1'});" class="my-button1">計算開始</button>
+	<button onclick="calcAdditional();gtag('event', 'click_invite', {'event_category': '追加計算','event_label': '実行','value': '1'});" class="my-button1">追加計算</button>
 	</select>
 	<span id="processing"></span>
 	<span id="selectedComfort"></span>
 	<div class="bottom">
 	<div>
 		<div class="tab active" data-tab="tab1">家具選択</div>
-		<div class="tab" data-tab="tab2">明細情報</div>
+		<div class="tab" data-tab="tab2">計算結果</div>
 		<div class="tab" data-tab="tab3">計算設定</div>
 		<div class="tab" data-tab="tab4">状態操作</div>
 		<div class="tab" data-tab="tab5">使い方等</div>

@@ -1317,6 +1317,184 @@ function editCustomFurniture(furnitureId) {
     displayValidationErrors([]);
 }
 
+// 選択済みキャラを除外して残りキャラのリストを取得
+function getRemainingCharacters() {
+    const selectedCharacters = Array.from(document.querySelectorAll('#charaList input[type="checkbox"]:checked'))
+        .map(checkbox => checkbox.value);
+    
+    return characterNames.filter(char => !selectedCharacters.includes(char.english));
+}
+
+// 各キャラクターでの計算処理
+async function calculateWithAdditionalCharacter(additionalCharacter) {
+    // 現在の選択キャラに追加キャラを加える
+    const currentSelected = Array.from(document.querySelectorAll('#charaList input[type="checkbox"]:checked'))
+        .map(checkbox => checkbox.value);
+    
+    const tempSelectedCharacters = [...currentSelected, additionalCharacter.english];
+    
+    // 一時的にdom_names, theme_1s, theme_2sを更新
+    const tempDomNames = [];
+    const tempTheme1s = [];
+    const tempTheme2s = [];
+    
+    tempSelectedCharacters.forEach(character => {
+        tempDomNames.push(chara_data[character][0]);
+        tempTheme1s.push(chara_data[character][1]);
+        tempTheme2s.push(chara_data[character][2]);
+    });
+    
+    // グローバル変数を一時的に保存
+    const originalDomNames = [...dom_names];
+    const originalTheme1s = [...theme_1s];
+    const originalTheme2s = [...theme_2s];
+    const originalSelectedCharacters = [...selectedCharacters];
+    
+    // 一時的にグローバル変数を更新
+    dom_names = tempDomNames;
+    theme_1s = tempTheme1s;
+    theme_2s = tempTheme2s;
+    selectedCharacters = tempSelectedCharacters;
+    
+    try {
+        let trynum = parseInt(document.getElementById("trynum").value);
+        let maxComfort = -Infinity;
+        let maxResult;
+        
+        for (let i = 0; i < trynum; i++) {
+            const ret = await longTask();
+            if (ret[0] > maxComfort) {
+                maxComfort = ret[0];
+                maxResult = ret;
+            }
+        }
+        
+        return maxResult;
+    } finally {
+        // グローバル変数を元に戻す
+        dom_names = originalDomNames;
+        theme_1s = originalTheme1s;
+        theme_2s = originalTheme2s;
+        selectedCharacters = originalSelectedCharacters;
+    }
+}
+
+// 追加計算のメイン処理
+async function calcAdditional() {
+    resetFilter();
+    
+    // 現在選択されているキャラクターがあるかチェック
+    const currentSelected = Array.from(document.querySelectorAll('#charaList input[type="checkbox"]:checked'));
+    if (currentSelected.length === 0) {
+        alert('まずキャラクターを選択してください。');
+        return;
+    }
+    
+    // 残りのキャラクターを取得
+    const remainingCharacters = getRemainingCharacters();
+    if (remainingCharacters.length === 0) {
+        alert('追加計算できるキャラクターがありません。');
+        return;
+    }
+    
+    const messageSpan = document.getElementById("processing");
+    
+    // シード値設定
+    seed = parseInt(document.getElementById("seed").value);
+    if (seed == -1) { seed = Math.floor(Math.random() * 100000); }
+    Math.random.seed(seed);
+    
+    const results = [];
+    const totalCharacters = remainingCharacters.length;
+    
+    for (let i = 0; i < remainingCharacters.length; i++) {
+        const character = remainingCharacters[i];
+        
+        // 進捗表示
+        messageSpan.innerHTML = `追加計算中... ${character.name} (${i + 1}/${totalCharacters})`;
+        
+        // 進捗率をprocessingエリアに表示
+        const progressPercentage = Math.round(((i + 1) / totalCharacters) * 100);
+        messageSpan.innerHTML = `追加計算中... ${character.name} (${i + 1}/${totalCharacters}) ${progressPercentage}%`;
+        
+        await dummyTask();
+        
+        try {
+            const result = await calculateWithAdditionalCharacter(character);
+            const achievementRate = result[0] < 0 ? 0 : Math.min((100 * result[0]), 100);
+            
+            results.push({
+                name: character.name,
+                rate: achievementRate
+            });
+        } catch (error) {
+            console.error(`計算エラー (${character.name}):`, error);
+            results.push({
+                name: character.name,
+                rate: 0
+            });
+        }
+    }
+    
+    // 結果を達成率降順でソート
+    results.sort((a, b) => b.rate - a.rate);
+    
+    // 結果を家具明細表示場所に表示
+    displayAdditionalResults(results);
+    
+    messageSpan.innerHTML = `追加計算完了 (${totalCharacters}キャラ計算済み)`;
+}
+
+// 追加計算結果を表示（家具明細の代わりに）
+function displayAdditionalResults(results) {
+    const selectedRowsDiv = document.getElementById("selectedRows");
+    
+    let output = '<div><button id="copyButtonAdditional">\
+    <i class="fas fa-clipboard">コピー</i>\
+    <div id="balloonContainer"/></button></div>\
+    <div id="details1" class="details textarea-wrapper">';
+    output += '<div style="display: flex;">';
+    
+    let copy_txt = '';
+    
+    results.forEach(result => {
+        output += `${result.name}\t${result.rate.toFixed(2)}%<br>`;
+        copy_txt += `${result.name}\t${result.rate.toFixed(2)}%\r\n`;
+    });
+    
+    output += '</div>';
+    selectedRowsDiv.innerHTML = output;
+    
+    // コピーボタンのイベントリスナーを設定
+    const copyButtonAdditional = document.getElementById("copyButtonAdditional");
+    if (copyButtonAdditional) {
+        copyButtonAdditional.addEventListener("click", () => {
+            const textToCopy = copy_txt;
+            navigator.clipboard.writeText(textToCopy).then(() => {
+                const balloon = document.createElement("div");
+                balloon.className = "balloon";
+                balloon.textContent = "追加計算結果をコピーしました";
+                copyButtonAdditional.parentNode.appendChild(balloon);
+
+                const buttonRect = copyButtonAdditional.getBoundingClientRect();
+                const balloonRect = balloon.getBoundingClientRect();
+                const balloonTop =
+                    buttonRect.top +
+                    buttonRect.height / 2 -
+                    balloonRect.height / 2;
+                const balloonLeft = buttonRect.right + 8;
+
+                balloon.style.top = `${balloonTop}px`;
+                balloon.style.left = `${balloonLeft}px`;
+
+                setTimeout(() => {
+                    balloon.parentNode.removeChild(balloon);
+                }, 1000);
+            });
+        });
+    }
+}
+
 // 削除機能
 function deleteCustomFurniture(furnitureId) {
     const customFurniture = loadCustomFurnitureFromLocalStorage();
