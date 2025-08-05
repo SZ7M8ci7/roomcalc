@@ -1325,13 +1325,9 @@ function getRemainingCharacters() {
     return characterNames.filter(char => !selectedCharacters.includes(char.english));
 }
 
-// 各キャラクターでの計算処理
-async function calculateWithAdditionalCharacter(additionalCharacter) {
-    // 現在の選択キャラに追加キャラを加える
-    const currentSelected = Array.from(document.querySelectorAll('#charaList input[type="checkbox"]:checked'))
-        .map(checkbox => checkbox.value);
-    
-    const tempSelectedCharacters = [...currentSelected, additionalCharacter.english];
+// 指定されたキャラクターで計算処理（共通関数）
+async function calculateWithCharacters(characterList) {
+    const tempSelectedCharacters = characterList;
     
     // 一時的にdom_names, theme_1s, theme_2sを更新
     const tempDomNames = [];
@@ -1377,6 +1373,17 @@ async function calculateWithAdditionalCharacter(additionalCharacter) {
         theme_2s = originalTheme2s;
         selectedCharacters = originalSelectedCharacters;
     }
+}
+
+// 各キャラクターでの計算処理
+async function calculateWithAdditionalCharacter(additionalCharacter) {
+    // 現在の選択キャラに追加キャラを加える
+    const currentSelected = Array.from(document.querySelectorAll('#charaList input[type="checkbox"]:checked'))
+        .map(checkbox => checkbox.value);
+    
+    const tempSelectedCharacters = [...currentSelected, additionalCharacter.english];
+    
+    return await calculateWithCharacters(tempSelectedCharacters);
 }
 
 // 追加計算のメイン処理
@@ -1445,6 +1452,187 @@ async function calcAdditional() {
     messageSpan.innerHTML = `追加計算完了 (${totalCharacters}キャラ計算済み)`;
 }
 
+// 2キャラの全組み合わせを生成
+function generateTwoCharacterCombinations() {
+    const combinations = [];
+    for (let i = 0; i < characterNames.length; i++) {
+        for (let j = i + 1; j < characterNames.length; j++) {
+            combinations.push([characterNames[i], characterNames[j]]);
+        }
+    }
+    return combinations;
+}
+
+// 2キャラでの計算処理
+async function calculateWithTwoCharacters(char1, char2) {
+    const tempSelectedCharacters = [char1.english, char2.english];
+    return await calculateWithCharacters(tempSelectedCharacters);
+}
+
+// 2キャラ組み合わせ計算のメイン処理
+async function calcTwoCombinations() {
+    resetFilter();
+    
+    const messageSpan = document.getElementById("processing");
+    
+    // シード値設定
+    seed = parseInt(document.getElementById("seed").value);
+    if (seed == -1) { seed = Math.floor(Math.random() * 100000); }
+    Math.random.seed(seed);
+    
+    // 全組み合わせを生成
+    const combinations = generateTwoCharacterCombinations();
+    const totalCombinations = combinations.length;
+    
+    messageSpan.innerHTML = `2キャラ組み合わせ計算準備中... (${totalCombinations}通り)`;
+    await dummyTask();
+    
+    const results = new Map();
+    
+    for (let i = 0; i < combinations.length; i++) {
+        const [char1, char2] = combinations[i];
+        
+        // 進捗表示
+        const progressPercentage = Math.round(((i + 1) / totalCombinations) * 100);
+        messageSpan.innerHTML = `2キャラ組み合わせ計算中... ${char1.name}×${char2.name} (${i + 1}/${totalCombinations}) ${progressPercentage}%`;
+        
+        await dummyTask();
+        
+        try {
+            const result = await calculateWithTwoCharacters(char1, char2);
+            const achievementRate = result[0] < 0 ? 0 : Math.min((100 * result[0]), 100);
+            
+            // マトリクス用のキーを生成
+            const key = `${char1.english}_${char2.english}`;
+            results.set(key, {
+                char1: char1.name,
+                char2: char2.name,
+                rate: achievementRate
+            });
+        } catch (error) {
+            console.error(`計算エラー (${char1.name}×${char2.name}):`, error);
+            const key = `${char1.english}_${char2.english}`;
+            results.set(key, {
+                char1: char1.name,
+                char2: char2.name,
+                rate: 0
+            });
+        }
+    }
+    
+    // 結果をマトリクス形式で表示
+    displayTwoCombinationMatrix(results);
+    
+    messageSpan.innerHTML = `2キャラ組み合わせ計算完了 (${totalCombinations}通り計算済み)`;
+}
+
+// マトリクス表示関数（上三角のみ）
+function displayTwoCombinationMatrix(results) {
+    const selectedRowsDiv = document.getElementById("selectedRows");
+    
+    let output = '<div><button id="copyButtonMatrix">\
+    <i class="fas fa-clipboard">コピー</i>\
+    <div id="balloonContainer"/></button></div>\
+    <div id="details1" class="details textarea-wrapper">';
+    
+    // テーブル形式でマトリクスを作成
+    output += '<table border="1" style="border-collapse: collapse; font-size: 12px;">';
+    
+    let copy_txt = '';
+    
+    // 寮とCSSクラスのマッピング
+    const dormClassMap = {
+        'ハーツラビュル': 'heartslabyul',
+        'サバナクロー': 'savanaclaw',
+        'オクタヴィネル': 'octavinelle',
+        'スカラビア': 'scarabia',
+        'ポムフィオーレ': 'pomefiore',
+        'イグニハイド': 'ignihydes',
+        'ディアソムニア': 'diasomnia',
+        'ナイトレイブンカレッジ': 'nightRavenCollege',
+    };
+
+    // ヘッダー行
+    output += '<tr><th style="padding: 4px; background-color: #f0f0f0;"></th>';
+    copy_txt += '\t';
+    
+    for (let j = 1; j < characterNames.length; j++) {
+        const character = chara_data[characterNames[j].english];
+        const dormClass = dormClassMap[character[0]] || '';
+        output += `<th class="${dormClass}" style="padding: 4px; writing-mode: vertical-rl; text-orientation: mixed; width: 30px;">${characterNames[j].name}</th>`;
+        copy_txt += `${characterNames[j].name}\t`;
+    }
+    output += '</tr>';
+    copy_txt += '\n';
+    
+    // データ行（上三角のみ）
+    for (let i = 0; i < characterNames.length - 1; i++) {
+        output += '<tr>';
+        const character = chara_data[characterNames[i].english];
+        const dormClass = dormClassMap[character[0]] || '';
+        output += `<th class="${dormClass}" style="padding: 4px;">${characterNames[i].name}</th>`;
+        copy_txt += `${characterNames[i].name}\t`;
+        
+        for (let j = 1; j < characterNames.length; j++) {
+            if (j <= i) {
+                output += '<td style="padding: 4px; background-color: #f5f5f5;">-</td>';
+                copy_txt += '-\t';
+            } else {
+                const key = `${characterNames[i].english}_${characterNames[j].english}`;
+                const result = results.get(key);
+                if (result) {
+                    const rate = Math.round(result.rate);
+                    let backgroundColor = '';
+                    if (rate >= 100) {
+                        backgroundColor = 'background-color: #4CAF50;'; // 緑
+                    } else if (rate >= 90) {
+                        backgroundColor = 'background-color: #87CEEB;'; // 水色
+                    }
+                    output += `<td style="padding: 4px; text-align: center; ${backgroundColor}">${rate}%</td>`;
+                    copy_txt += `${rate}%\t`;
+                } else {
+                    output += '<td style="padding: 4px; text-align: center;">-</td>';
+                    copy_txt += '-\t';
+                }
+            }
+        }
+        output += '</tr>';
+        copy_txt += '\n';
+    }
+    
+    output += '</table></div>';
+    selectedRowsDiv.innerHTML = output;
+    
+    // コピーボタンのイベントリスナーを設定
+    const copyButtonMatrix = document.getElementById("copyButtonMatrix");
+    if (copyButtonMatrix) {
+        copyButtonMatrix.addEventListener("click", () => {
+            const textToCopy = copy_txt;
+            navigator.clipboard.writeText(textToCopy).then(() => {
+                const balloon = document.createElement("div");
+                balloon.className = "balloon";
+                balloon.textContent = "マトリクス結果をコピーしました";
+                copyButtonMatrix.parentNode.appendChild(balloon);
+
+                const buttonRect = copyButtonMatrix.getBoundingClientRect();
+                const balloonRect = balloon.getBoundingClientRect();
+                const balloonTop =
+                    buttonRect.top +
+                    buttonRect.height / 2 -
+                    balloonRect.height / 2;
+                const balloonLeft = buttonRect.right + 8;
+
+                balloon.style.top = `${balloonTop}px`;
+                balloon.style.left = `${balloonLeft}px`;
+
+                setTimeout(() => {
+                    balloon.parentNode.removeChild(balloon);
+                }, 1000);
+            });
+        });
+    }
+}
+
 // 追加計算結果を表示（家具明細の代わりに）
 function displayAdditionalResults(results) {
     const selectedRowsDiv = document.getElementById("selectedRows");
@@ -1458,8 +1646,9 @@ function displayAdditionalResults(results) {
     let copy_txt = '';
     
     results.forEach(result => {
-        output += `${result.name}\t${result.rate.toFixed(2)}%<br>`;
-        copy_txt += `${result.name}\t${result.rate.toFixed(2)}%\r\n`;
+        const rate = Math.round(result.rate);
+        output += `${result.name}\t${rate}%<br>`;
+        copy_txt += `${result.name}\t${rate}%\r\n`;
     });
     
     output += '</div>';
