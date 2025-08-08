@@ -1992,3 +1992,186 @@ function saveInputState() {
 	// 手入力家具テーブルを初期化
 	initializeCustomFurnitureTable();
   };
+
+// キャラ推奨家具計算機能
+async function calcRecommendedFurniture() {
+    resetFilter();
+    
+    // 現在選択されているキャラクターがあるかチェック
+    const currentSelected = Array.from(document.querySelectorAll('#charaList input[type="checkbox"]:checked'));
+    if (currentSelected.length === 0) {
+        alert('まずキャラクターを選択してください。');
+        return;
+    }
+
+    const messageSpan = document.getElementById("processing");
+    messageSpan.innerHTML = "キャラ推奨家具を計算中...";
+    
+    // 選択されたキャラクターの情報を取得
+    const selectedCharacters = currentSelected.map(checkbox => checkbox.value);
+    
+    // 各キャラクターの寮・テーマ情報を収集
+    const domNames = [];
+    const theme1s = [];
+    const theme2s = [];
+    
+    selectedCharacters.forEach(character => {
+        domNames.push(chara_data[character][0]);
+        theme1s.push(chara_data[character][1]);
+        theme2s.push(chara_data[character][2]);
+    });
+
+    // 全家具の貢献度を計算
+    const furnitureScores = [];
+    
+    for (let i = 0; i < furnitures.length; i++) {
+        const furniture = furnitures[i];
+        let totalScore = 0;
+        
+        // 各選択キャラクターに対する貢献度を計算
+        selectedCharacters.forEach(character => {
+            const charaDomName = chara_data[character][0];
+            const charaTheme1 = chara_data[character][1];
+            const charaTheme2 = chara_data[character][2];
+            
+            let charScore = 0;
+            
+            // テーマスコア計算
+            if (furniture[11] === charaTheme1) {
+                charScore += parseFloat(furniture[9]) || 0;
+            }
+            if (furniture[12] === charaTheme1) {
+                charScore += parseFloat(furniture[10]) || 0;
+            }
+            if (furniture[11] === charaTheme2) {
+                charScore += (parseFloat(furniture[9]) || 0) / 2;
+            }
+            if (furniture[12] === charaTheme2) {
+                charScore += (parseFloat(furniture[10]) || 0) / 2;
+            }
+            
+            // 寮スコア計算
+            if (furniture[13] === charaDomName) {
+                charScore += parseInt(furniture[8]) || 0;
+            }
+            
+            totalScore += charScore;
+        });
+        
+        // スコアが0より大きい家具のみ追加
+        if (totalScore > 0) {
+            furnitureScores.push({
+                index: i,
+                name: furniture[1],
+                score: totalScore,
+                theme1: furniture[11] || '',
+                theme1Value: furniture[9] || '',
+                theme2: furniture[12] || '',
+                theme2Value: furniture[10] || '',
+                dorm: furniture[13] || '',
+                dormValue: furniture[8] || ''
+            });
+        }
+    }
+    
+    // スコア降順でソート
+    furnitureScores.sort((a, b) => b.score - a.score);
+    
+    // 上位500個を取得
+    const top500 = furnitureScores.slice(0, 500);
+    
+    // 結果を表示
+    displayRecommendedFurniture(top500, selectedCharacters);
+    
+    messageSpan.innerHTML = `キャラ推奨家具計算完了 (上位${top500.length}個表示)`;
+}
+
+// 推奨家具の結果表示
+function displayRecommendedFurniture(recommendedFurniture, selectedCharacters) {
+    const selectedRowsDiv = document.getElementById("selectedRows");
+    
+    let output = '<div><button id="copyButtonRecommended">\
+    <i class="fas fa-clipboard">コピー</i>\
+    <div id="balloonContainer"/></button></div>\
+    <div id="details1" class="details textarea-wrapper">';
+    
+    output += '<h3>キャラ推奨家具（貢献度順）</h3>';
+    output += `<p>選択キャラクター: ${selectedCharacters.map(char => {
+        const charName = characterNames.find(c => c.english === char);
+        return charName ? charName.name : char;
+    }).join(', ')}</p>`;
+    
+    // テーブル形式で表示
+    output += '<table border="1" style="border-collapse: collapse; width: 100%;">';
+    output += '<tr style="background-color: #f0f0f0;">';
+    output += '<th style="padding: 8px;">順位</th>';
+    output += '<th style="padding: 8px;">家具名</th>';
+    output += '<th style="padding: 8px;">貢献度</th>';
+    output += '<th style="padding: 8px;">テーマ1</th>';
+    output += '<th style="padding: 8px;">値</th>';
+    output += '<th style="padding: 8px;">テーマ2</th>';
+    output += '<th style="padding: 8px;">値</th>';
+    output += '<th style="padding: 8px;">寮</th>';
+    output += '<th style="padding: 8px;">値</th>';
+    output += '</tr>';
+    
+    let copy_txt = 'キャラ推奨家具（貢献度順）\n';
+    copy_txt += `選択キャラクター: ${selectedCharacters.map(char => {
+        const charName = characterNames.find(c => c.english === char);
+        return charName ? charName.name : char;
+    }).join(', ')}\n\n`;
+    copy_txt += '順位\t家具名\t貢献度\tテーマ1\t値\tテーマ2\t値\t寮\t値\n';
+    
+    recommendedFurniture.forEach((furniture, index) => {
+        const rank = index + 1;
+        output += '<tr>';
+        output += `<td style="padding: 8px; text-align: center;">${rank}</td>`;
+        output += `<td style="padding: 8px;">${furniture.name}</td>`;
+        output += `<td style="padding: 8px; text-align: center;">${Math.round(furniture.score * 10) / 10}</td>`;
+        output += `<td style="padding: 8px;">${furniture.theme1}</td>`;
+        output += `<td style="padding: 8px; text-align: center;">${furniture.theme1Value}</td>`;
+        output += `<td style="padding: 8px;">${furniture.theme2}</td>`;
+        output += `<td style="padding: 8px; text-align: center;">${furniture.theme2Value}</td>`;
+        output += `<td style="padding: 8px;">${furniture.dorm}</td>`;
+        output += `<td style="padding: 8px; text-align: center;">${furniture.dormValue}</td>`;
+        output += '</tr>';
+        
+        copy_txt += `${rank}\t${furniture.name}\t${Math.round(furniture.score * 10) / 10}\t${furniture.theme1}\t${furniture.theme1Value}\t${furniture.theme2}\t${furniture.theme2Value}\t${furniture.dorm}\t${furniture.dormValue}\n`;
+    });
+    
+    output += '</table></div>';
+    selectedRowsDiv.innerHTML = output;
+    
+    // 統計詳細とテーマ詳細をクリア
+    document.getElementById("statsDetail").innerHTML = '';
+    document.getElementById("themeDetail").innerHTML = '';
+    
+    // コピーボタンのイベントリスナーを設定
+    const copyButtonRecommended = document.getElementById("copyButtonRecommended");
+    if (copyButtonRecommended) {
+        copyButtonRecommended.addEventListener("click", () => {
+            const textToCopy = copy_txt;
+            navigator.clipboard.writeText(textToCopy).then(() => {
+                const balloon = document.createElement("div");
+                balloon.className = "balloon";
+                balloon.textContent = "推奨家具リストをコピーしました";
+                copyButtonRecommended.parentNode.appendChild(balloon);
+
+                const buttonRect = copyButtonRecommended.getBoundingClientRect();
+                const balloonRect = balloon.getBoundingClientRect();
+                const balloonTop =
+                    buttonRect.top +
+                    buttonRect.height / 2 -
+                    balloonRect.height / 2;
+                const balloonLeft = buttonRect.right + 8;
+
+                balloon.style.top = `${balloonTop}px`;
+                balloon.style.left = `${balloonLeft}px`;
+
+                setTimeout(() => {
+                    balloon.parentNode.removeChild(balloon);
+                }, 1000);
+            });
+        });
+    }
+}
