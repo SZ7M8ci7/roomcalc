@@ -37,6 +37,10 @@ let selected_front_top = new Set();
 let selected_front_bot = new Set();
 let selected_other = new Set();
 
+function getFrameLimit(room_rank) {
+    return room_rank >= 31 ? 2 : 1;
+}
+
 let selected_wall_list = [];
 let selected_floor_list = [];
 let selected_front_top_list = [];
@@ -803,7 +807,7 @@ function cost(data_list, selected_maxval, room_rank) {
     if (wall_area > max_wall_num.get(room_rank)) { base_point *= 0.25 ** (wall_area - max_wall_num.get(room_rank)); }
     if (floor_area > max_floor_num.get(room_rank)) { base_point *= 0.25 ** (floor_area - max_floor_num.get(room_rank)); }
     if (place_area > max_floor_num.get(room_rank)) { base_point *= 0.25 ** (place_area - max_floor_num.get(room_rank)); }
-    if (data_list.filter(element => frame.has(element)).length > 1) { base_point *= 0.25; }
+    if (data_list.filter(element => frame.has(element)).length > getFrameLimit(room_rank)) { base_point *= 0.25; }
     for (const key of countMap.keys()) {
         if (countMap.get(key) > selected_maxval[key]) {
             base_point *= 0.25 ** (countMap.get(key) - selected_maxval[key]);
@@ -954,38 +958,6 @@ function calculateAcceptanceProbability(currentCost, newCost, temperature) {
 	const delta = currentCost - newCost;
 	// console.log(delta*temperature/1000);
 	return delta*temperature/1000;
-}
-
-// 面積自動計算機能
-function calculateAreas(category, squares) {
-    let installArea = 0;
-    let floorArea = 0;
-    let wallArea = 0;
-    
-    const squareNum = parseInt(squares) || 0;
-    
-    if (category === "装飾：写真" || category === "装飾：壁装飾") {
-        // 壁面積 = マス数、設置面積 = 0、床面積 = 0
-        wallArea = squareNum;
-        installArea = 0;
-        floorArea = 0;
-    } else if (category === "装飾：ラグ") {
-        // 床面積 = マス数、設置面積 = 0、壁面積 = 0
-        floorArea = squareNum;
-        installArea = 0;
-        wallArea = 0;
-    } else {
-        // その他すべて → 設置面積 = マス数、床面積 = 0、壁面積 = 0
-        installArea = squareNum;
-        floorArea = 0;
-        wallArea = 0;
-    }
-    
-    return {
-        installArea: installArea,
-        floorArea: floorArea,
-        wallArea: wallArea
-    };
 }
 
 // 分類に基づいて面積を計算する関数
