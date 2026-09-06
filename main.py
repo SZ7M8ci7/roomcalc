@@ -1,6 +1,7 @@
 import gspread
 import os
 from oauth2client.service_account import ServiceAccountCredentials
+from furniture_corrections import correct_furniture_row
 
 OUTPUT_STATUSES = {'記入済', '確認中', '確認済', 'masterコピー済', '公開済'}
 
@@ -50,7 +51,8 @@ with open('data.csv', mode='w', encoding='UTF-8') as file:
             row += [''] * (55 - len(row))
         if row[2] == '' or row[2] == '名前' or row[1].strip() not in OUTPUT_STATUSES:
             continue
-        line = ','.join([str(count)]+row[2:16]+[row[54]]) + '\r\n'
+        csv_row = correct_furniture_row([str(count)]+row[2:16]+[row[54]])
+        line = ','.join(csv_row) + '\r\n'
         line = line.replace('小型雑貨', '小物雑貨')
         file.write(line)
         count+=1
