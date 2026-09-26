@@ -11,15 +11,17 @@
 	gtag('config', 'G-LL7JVKT1C1');
 	</script>
 	<meta charset="UTF-8">
-	<!-- <meta name="viewport" content="width=device-width, initial-scale=1.0"> -->
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
 	<title>招待部屋検討ツール</title>
 	<link rel="stylesheet" type="text/css" href="https://cdn.datatables.net/1.10.19/css/jquery.dataTables.css">
-	<link rel="stylesheet" type="text/css" href="style.css">
+	<link rel="stylesheet" type="text/css" href="style.css?v=20260926-5">
 	<link rel="stylesheet" type="text/css" href="style_invite.css">
 	<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 	<script type="text/javascript" src="https://cdn.datatables.net/1.10.19/js/jquery.dataTables.js"></script>
 	<link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.15.1/css/all.css">
 	<script src="table_value_filters.js"></script>
+	<script src="room_state.js?v=20260926-3"></script>
+    <script src="furniture_names.js?v=20260926-2"></script>
 	<script src="script_invite.js"></script>
 	<style>
 		.filter-col1 { width: 50px; }
@@ -111,7 +113,7 @@
 		}
 	</style>
 </head>
-<body>
+<body class="room-page room-invite">
 	<h1>招待部屋検討ツール</h1>
 	<div class="selection-container">
         <!-- キャラクター選択ボタン -->
@@ -135,25 +137,28 @@
         </div>
     </div>
 
+<div class="calculation-toolbar">
+	<label for="dom_grade">寮評価</label>
 	<select id="dom_grade">
-		<option value="excellent">寮Excellent</option>
-		<option value="great">寮Great</option>
-		<option value="good">寮Good</option>
+		<option value="excellent">Excellent</option>
+		<option value="great">Great</option>
+		<option value="good">Good</option>
 		<option value="normal">無し</option>
 	</select>
+	<label for="theme_grade">テーマ評価</label>
 	<select id="theme_grade">
-		<option value="excellent">テーマExcellent</option>
-		<option value="great">テーマGreat</option>
-		<option value="good">テーマGood</option>
+		<option value="excellent">Excellent</option>
+		<option value="great">Great</option>
+		<option value="good">Good</option>
 		<option value="normal">無し</option>
 	</select>
 	<button onclick="calcstart();gtag('event', 'click_invite', {'event_category': '計算実行','event_label': '実行','value': '1'});" class="my-button1">計算開始</button>
 	<button onclick="calcAdditional();gtag('event', 'click_invite', {'event_category': '追加計算','event_label': '実行','value': '1'});" class="my-button1">追加計算</button>
 	<button onclick="calcTwoCombinations();gtag('event', 'click_invite', {'event_category': '2キャラ組み合わせ計算','event_label': '実行','value': '1'});" class="my-button1">2キャラ計算</button>
 	<button onclick="calcRecommendedFurniture();gtag('event', 'click_invite', {'event_category': 'キャラ推奨家具','event_label': '実行','value': '1'});" class="my-button1">推奨家具計算</button>
-	</select>
 	<span id="processing"></span>
 	<span id="selectedComfort"></span>
+	</div>
 	<div class="bottom">
 	<div>
 		<div class="tab active" data-tab="tab1">家具選択</div>
@@ -166,16 +171,39 @@
 	<div>
 		<div class="tabContent active" data-tab="tab1Content">
 			<div class="marginmid">
-			<button type="button" onclick="resetFilter()">絞り込みを解除</button>
+            <section class="state-panel" aria-label="状態の保存と復元">
+                <details class="state-manual">
+                    <summary>保存・復元</summary>
+                <p id="autosave-status" role="status">読み込み中…</p>
+                <div class="state-controls">
+                    <label for="state-name">保存名</label>
+                    <input type="text" id="state-name" maxlength="100" placeholder="例：イベント用・登録途中">
+                    <button type="button" id="state-new" disabled>名前を付けて新規保存</button>
+                </div>
+                <div class="state-controls">
+                    <label for="saved-states">保存した状態</label>
+                    <select id="saved-states"><option value="">保存枠を選択</option></select>
+                    <button type="button" id="state-restore" disabled>復元</button>
+                    <button type="button" id="state-overwrite" disabled>上書き保存</button>
+                    <button type="button" id="state-rename" disabled>名前変更</button>
+                    <button type="button" id="state-delete" disabled>削除</button>
+                </div>
+                <p>家具と計算設定の変更をこのブラウザーに直近5回分まで自動保存します。一覧から履歴を選んで復元でき、次回は最新の状態から再開します。手動の保存枠は自動保存で上書きされません。</p>
+                <p>別の端末への移行やブラウザーのデータ削除に備える場合は、状態操作から出力して保管してください。</p>
+                </details>
+                <p id="state-message" role="status"></p>
+            </section>
+
+<div class="inventory-toolbar"><h2>家具一覧</h2><div class="inventory-actions"><label for="set_val">表示中の家具を</label><input type="number" class="set_val" id="set_val" name="set_val" value="0" min="0" max="99">
+				<button id="setall" onclick="setall()">表示項目一括設定</button><span class="toolbar-divider"></span><button type="button" onclick="resetFilter()">絞り込みを解除</button></div></div>
+            <div class="inventory-scroll" role="region" aria-label="家具一覧（横にスクロールできます）" tabindex="0">
 			<table id="myTable" class="data-table">
-				<button id="checkcache" onclick="saveInputState()">個数をキャッシュに保存</button>
-				<input type="number" class="set_val" id="set_val" name="set_val" value="0" min="0" max="99">
-				<button id="setall" onclick="setall()">表示項目一括設定</button>
 				<thead>
 					<tr>
 						<th><input type="text" placeholder="No" id="filter-col1" class="filter-col1"></th>
 						<th><input type="text" placeholder="個数" id="filter-col2" class="filter-col2"></th>
 						<th><input type="text" placeholder="名称" id="filter-col3" class="filter-col3"></th>
+                        <th><input type="text" placeholder="英語名" id="filter-col16" class="filter-english-name"></th>
 						<th><input type="text" placeholder="レア" id="filter-col4" class="filter-col4"></th>
 						<th><input type="text" placeholder="分類" id="filter-col5" class="filter-col5"></th>
 						<th><input type="text" placeholder="テーマ１" id="filter-col6" class="filter-col6"></th>
@@ -192,6 +220,8 @@
 				</thead>
 				<tbody></tbody>
 			</table>
+            </div>
+			<p id="english-name-status" role="status"></p>
 			</div>
 		</div>
 		<div class="tabContent" data-tab="tab2Content">
@@ -236,10 +266,18 @@
 		</div>
 		<div class="tabContent" data-tab="tab4Content">
 			<div class="marginmid">
-				<button id="btn-stats-out">状態出力</button>
+				<label for="state-format">出力・取り込み形式</label>
+                <select id="state-format">
+                    <option value="legacy">従来の状態データ</option>
+                    <option value="named">家具名と所持数</option>
+                </select>
+                <p>家具名付き形式はタブ区切りの2列です（CSVも取り込み可能）。日本語名・対応済みの英語名で取り込めます。記載された家具のみ反映します。未登録の手入力家具は先に登録してください。</p>
+                <p>所持数は0以上の整数です。</p>
+                <button id="btn-stats-out">状態出力</button>
 				<button id="btn-stats-save">状態復元</button>
 				<button id="copyButton_stats"><i class="fas fa-clipboard">コピー</i><div id="balloonContainer"/></button><br>
-				<textarea id="text-stats" rows="10" cols="50"></textarea>
+				<textarea id="text-stats" rows="10" cols="50" aria-label="出力・取り込みデータ"></textarea>
+                <p id="transfer-message" role="status"></p>
 			</div>
 		</div>
 		<div class="tabContent" data-tab="tab5Content">

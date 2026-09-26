@@ -22,6 +22,7 @@ Math.random.seed = (function me (s) {
 
 var table = null; // 初期化
 var valueFilters = null;
+var stateManager = null;
 var furnitures = [];
 var max_furniture_num = new Map();
 var max_floor_num = new Map();
@@ -112,7 +113,7 @@ const dom_judge = {
 }
 
 $(document).ready(function() {
-	loadAndGenerateCharacterList(); // ページの読み込み時にキャラクタリストを生成
+	const characterRequest = loadAndGenerateCharacterList(); // 復元前にキャラクターの読込完了を待つ
 
 	const copyButton_stats = document.getElementById("copyButton_stats");
 	copyButton_stats.addEventListener("click", () => {
@@ -139,76 +140,17 @@ $(document).ready(function() {
           }, 1000);
         });
       });
-	$("#btn-stats-out").click(function(){
-		resetFilter();
-		// チェックボックスの状態を取得
-		const checkboxes = document.querySelectorAll('input[type="number"]');
-		var lines = [];
-		lines.push(seed);
-		lines.push(Date.now());
-		lines.push(document.getElementById('rankInput').value);
-		lines.push(document.querySelector('input[name="proctype"]:checked').value);
-		lines.push(document.getElementById("trynum").value);
-		// チェックボックスの状態を取得
-		const selectedCharacters = Array.from(document.querySelectorAll('#charaList input[type="checkbox"]:checked'))
-			.map(checkbox => checkbox.value);
-		lines.push(selectedCharacters.join(",")); // 選択されたキャラクターをCSV形式で保存
-
-
-		lines.push(document.getElementById('dom_grade').value);
-		lines.push(document.getElementById('theme_grade').value);
-		
-		var stats_all = '';
-		$.each(checkboxes, function(index, checkbox){ // 各チェックボックスに対して処理を行う
-			stats_all += String(checkbox.value).padStart(2, '0');
-		});
-		lines.push(stats_all);
-		$("#text-stats").val(lines.join("\n")); // テキストエリアに設定内容を出力する
-	});	
-	$("#btn-stats-save").click(function(){
-		resetFilter();
-		var lines = $("#text-stats").val().split("\n"); // テキストエリアの値を1行ずつ取得
-		$("#rankInput").val(lines[2]);
-		var radios = document.getElementsByName("proctype");
-		if (lines[3] == '0'){radios[0].checked = true;}
-		if (lines[3] == '1'){radios[1].checked = true;}
-		if (lines[3] == '2'){radios[2].checked = true;}
-		$("#trynum").val(lines[4]);
-		// チェックボックスの状態を復元
-		const selectedCharacters = lines[5].split(",");
-		document.querySelectorAll('#charaList input[type="checkbox"]').forEach(checkbox => {
-			checkbox.checked = selectedCharacters.includes(checkbox.value);
-		});
-		updateSelectedCharacters(); // 選択状態を表示に反映
-
-		$("#dom_grade").val(lines[6]);
-		$("#theme_grade").val(lines[7]);
-		var checkboxes = $('input[type="number"]'); // 全てのチェックボックスを取得
-		$.each(checkboxes, function(index, checkbox){ // 各チェックボックスに対して処理を行う
-			$(checkbox).val(parseInt(lines[8].substring(2*index,2*index+2)));
-		});
-		table.draw();
-		const balloon = document.createElement("div");
-		balloon.className = "balloon";
-		balloon.textContent = "復元しました";
-		document.getElementById("btn-stats-save").parentNode.appendChild(balloon);
-
-		const buttonRect = document.getElementById("btn-stats-save").getBoundingClientRect();
-		const balloonRect = balloon.getBoundingClientRect();
-		const balloonTop =
-		  buttonRect.top +
-		  buttonRect.height / 2 -
-		  balloonRect.height / 2;
-		const balloonLeft = buttonRect.right + 8;
-
-		balloon.style.top = `${balloonTop}px`;
-		balloon.style.left = `${balloonLeft}px`;
-
-		setTimeout(() => {
-		  balloon.parentNode.removeChild(balloon);
-		}, 1000);
-	});	
-	$.ajax({
+    $("#btn-stats-out").click(function () {
+        if (!stateManager) return;
+        if (document.getElementById('state-format').value === 'named') stateManager.exportNamed();
+        else stateManager.exportLegacy(seed, resetFilter);
+    });
+    $("#btn-stats-save").click(function () {
+        if (!stateManager) return;
+        if (document.getElementById('state-format').value === 'named') stateManager.importNamed();
+        else stateManager.importLegacy(resetFilter);
+    });
+	const rankRequest = $.ajax({
 		type: "GET",
 		url: "roomrank.csv",
 		dataType: "text",
@@ -231,7 +173,7 @@ $(document).ready(function() {
 			numberInput.value = max_room_rank;
 		}
 	});
-	$.ajax({
+	const furnitureRequest = $.ajax({
         type: "GET",
         url: "data.csv",
         dataType: "text",
@@ -243,9 +185,10 @@ $(document).ready(function() {
                 "searching": true,
                 "info": true,
                 "autoWidth": false,
+                "columns": [0, 1, 2, 15, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14].map(function (index) { return { data: index }; }),
 				"columnDefs": [
-					{ "targets": [0,12,13,14], "className": "hidden" },
-					{ "orderable": false, "targets": [0,1,2,3,4,5,6,7,8,9,10,11,12,13,14] }
+					{ "targets": [0, 13, 14, 15], "className": "hidden" },
+					{ "orderable": false, "targets": "_all" }
 				]				
             });
 			
@@ -273,6 +216,7 @@ $(document).ready(function() {
 					add_data.push(row_data[4]);
 					add_data.push(row_data[5]);
 					add_data.push(row_data[6]);
+                    add_data.push(''); // 英語名
 
                     table.row.add(add_data);
 
@@ -287,9 +231,23 @@ $(document).ready(function() {
 			
 
             table.draw();
-			restoreInputState();
+
             valueFilters = initializeTableValueFilters(table);
+            initializeFurnitureNames(table, 2, 15);
         }
+    });
+    $.when(rankRequest, furnitureRequest, characterRequest).done(function () {
+        stateManager = RoomState.initialize({ mode: 'invite', table: table ,
+            getCustom: loadCustomFurnitureFromLocalStorage,
+            setCustom: function (items) {
+                localStorage.setItem('customFurniture', JSON.stringify(items));
+                updateCustomFurnitureTable();
+                integrateCustomFurnitureWithMainTable();
+                updateCategorySets();
+            },
+            onCharacters: updateSelectedCharacters });
+    }).fail(function () {
+        document.getElementById('autosave-status').textContent = 'データを読み込めないため自動保存を開始できません。再読み込みしてください。';
     });
 	const tabs = document.querySelectorAll(".tab");
 	const tabContents = document.querySelectorAll(".tabContent");
@@ -309,56 +267,56 @@ $(document).ready(function() {
 	
 	// フィルタが変更されたときにテーブルを再描画
 	$('#filter-col1').on('keyup change', function() {
-        table.column(0).search(this.value).draw();
+        furnitureColumn(table, 0).search(this.value).draw();
 	});
 	$('#filter-col2').on('keyup change', function() {
 		table.draw();
     });
 	$('#filter-col3').on('keyup change', function() {
-        table.column(2).search(this.value).draw();
+        furnitureColumn(table, 2).search(this.value).draw();
     });
 	$('#filter-col4').on('keyup change', function() {
 		var searchTerm = this.value;
 		if (searchTerm) {
 			// Add `^` and `$` to enforce exact match
-			table.column(3).search('^' + searchTerm + '$', true, false).draw();
+			furnitureColumn(table, 3).search('^' + searchTerm + '$', true, false).draw();
 		} else {
 			// If the search term is empty, clear the filter
-			table.column(3).search('').draw();
+			furnitureColumn(table, 3).search('').draw();
 		}
 	});
     $('#filter-col5').on('keyup change', function() {
-        table.column(4).search(this.value).draw();
+        furnitureColumn(table, 4).search(this.value).draw();
     });
     $('#filter-col6').on('keyup change', function() {
-        table.column(5).search(this.value).draw();
+        furnitureColumn(table, 5).search(this.value).draw();
     });
     $('#filter-col7').on('keyup change', function() {
-        table.column(6).search(this.value).draw();
+        furnitureColumn(table, 6).search(this.value).draw();
     });
     $('#filter-col8').on('keyup change', function() {
-        table.column(7).search(this.value).draw();
+        furnitureColumn(table, 7).search(this.value).draw();
     });
     $('#filter-col9').on('keyup change', function() {
-        table.column(8).search(this.value).draw();
+        furnitureColumn(table, 8).search(this.value).draw();
     });
     $('#filter-col10').on('keyup change', function() {
-        table.column(9).search(this.value).draw();
+        furnitureColumn(table, 9).search(this.value).draw();
     });
     $('#filter-col11').on('keyup change', function() {
-        table.column(10).search(this.value).draw();
+        furnitureColumn(table, 10).search(this.value).draw();
     });
     $('#filter-col12').on('keyup change', function() {
-        table.column(11).search(this.value).draw();
+        furnitureColumn(table, 11).search(this.value).draw();
     });
     $('#filter-col13').on('keyup change', function() {
-        table.column(12).search(this.value).draw();
+        furnitureColumn(table, 12).search(this.value).draw();
     });
     $('#filter-col14').on('keyup change', function() {
-        table.column(13).search(this.value).draw();
+        furnitureColumn(table, 13).search(this.value).draw();
     });
     $('#filter-col15').on('keyup change', function() {
-        table.column(14).search(this.value).draw();
+        furnitureColumn(table, 14).search(this.value).draw();
     });
 	tabs.forEach((tab) => {
 		tab.addEventListener("click", () => {
@@ -388,6 +346,7 @@ function updateSelectedCharacters() {
     selectedCharaDisplay.innerHTML = selectedCharas.length > 0
         ? "選択中: " + selectedCharas.join(", ")
         : "選択中: なし";
+    if (stateManager) stateManager.changed();
 }
 
 // 選択解除ボタン
@@ -704,14 +663,10 @@ function displaySelected() {
 	var tmp_selected_other = [];
 
     selectedRows.each(function () {
-        var rowData = [];
-		$(this).find('td').each(function () {
-			if ($(this).index() == 1) {
-				rowData.push($(this).find('input[type="number"]').val());
-			} else {
-				rowData.push($(this).text());
-			}
-		});
+        var sourceData = table.row(this).data();
+        if (!sourceData) return;
+        var rowData = sourceData.slice();
+        rowData[1] = $(this).find('input[name="max_num"]').val();
 		var no = parseInt(rowData[0]);
 		if (parseInt(rowData[1]) <= 0){return true};
 		var theme_1_name = rowData[5];
@@ -1774,6 +1729,11 @@ function integrateCustomFurnitureWithMainTable() {
         return;
     }
     
+    const previousQuantities = new Map();
+    table.rows().nodes().toArray().forEach(function (row) {
+        const input = row.querySelector('input[data-custom-id]');
+        if (input) previousQuantities.set(input.dataset.customId, input.value);
+    });
     // 既存のカスタム家具行を削除
     table.rows().nodes().to$().each(function(index, row) {
         const rowData = table.row(row).data();
@@ -1839,12 +1799,17 @@ function integrateCustomFurnitureWithMainTable() {
         add_data.push(areas.install);  // 設置
         add_data.push(areas.floor);  // 床
         add_data.push(areas.wall); // 壁
+        add_data.push(''); // 手入力家具には外部の英語名を推測で割り当てない
         
-        table.row.add(add_data);
+        const row = table.row.add(add_data).node();
+        const input = row.querySelector('input[name="max_num"]');
+        input.dataset.customId = furniture.id;
+        if (previousQuantities.has(furniture.id)) input.value = previousQuantities.get(furniture.id);
     });
-    
+
     // テーブルを再描画
     table.draw();
+    if (stateManager) stateManager.changed();
 }
 
 
@@ -1882,36 +1847,10 @@ function updateCategorySets() {
     }
 }
 
-function saveInputState() {
-	// 数値入力フィールドの値を取得してキャッシュに保存
-	const inputs = document.querySelectorAll('input[type="number"]');
-	for (let i = 0; i < inputs.length; i++) {
-	  localStorage.setItem(inputs[i].id, inputs[i].value);
-	}
-	const copyButton = document.getElementById("checkcache");
-	const balloon = document.createElement("div");
-	balloon.className = "balloon";
-	balloon.textContent = "保存しました";
-	copyButton.parentNode.appendChild(balloon);
-  
-	const buttonRect = copyButton.getBoundingClientRect();
-	const balloonRect = balloon.getBoundingClientRect();
-	const balloonTop =
-	  buttonRect.top +
-	  buttonRect.height / 2 -
-	  balloonRect.height / 2;
-	const balloonLeft = buttonRect.right + 8;
-  
-	balloon.style.top = `${balloonTop}px`;
-	balloon.style.left = `${balloonLeft}px`;
-  
-	setTimeout(() => {
-	  balloon.parentNode.removeChild(balloon);
-	}, 1000);
-  }
   function setall(){
 	const filteredRows = table.rows({ filter: 'applied' }).nodes();
-	let setnum = parseInt(document.getElementById("set_val").value)
+	let setnum = Number(document.getElementById("set_val").value);
+    if (!Number.isInteger(setnum) || setnum < 0 || setnum > 99) return;
 	 // 各行に対して処理を行う
 	 $(filteredRows).each(function() {
 		const row = $(this);
@@ -1927,26 +1866,16 @@ function saveInputState() {
 		numCell.val(newValue);
 	  });
 	  table.draw();
+      if (stateManager) stateManager.changed();
   }
-  function restoreInputState() {
-	// キャッシュから数値入力フィールドの値を取得して復元
-	const inputs = document.querySelectorAll('input[type="number"]');
-	for (let i = 0; i < inputs.length; i++) {
-	  let iid = inputs[i].id;
-	  if (!(iid == "rankInput" || localStorage.getItem(iid)==''||localStorage.getItem(iid)==null)){
-		  inputs[i].value = localStorage.getItem(iid);
-	  }
-	}
-  }
-  
   function resetFilter() {
 	if (!table) return;
 	if (valueFilters) valueFilters.reset();
 	table.search('');
 
-	for (let i = 1; i <= 15; i++) {
+	for (let i = 1; i <= 16; i++) {
 		$('#filter-col'+i.toString()).val(''); // フィルター入力を空にする
-		table.column(i-1).search(''); // カラム4の検索条件をクリア
+		furnitureColumn(table, i-1).search(''); // カラム4の検索条件をクリア
 	}
 	table.draw();
   }

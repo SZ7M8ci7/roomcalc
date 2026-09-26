@@ -1,3 +1,9 @@
+// Resolve the displayed column without changing the calculation's data indexes.
+function furnitureColumn(table, sourceIndex) {
+    const index = table.columns().indexes().toArray().find(i => table.column(i).dataSrc() === sourceIndex);
+    return table.column(index);
+}
+
 // 検索欄と併用できる、列ごとの完全一致フィルター。
 function initializeTableValueFilters(table) {
     const tableNode = table.table().node();
@@ -10,14 +16,20 @@ function initializeTableValueFilters(table) {
     }
 
     $(tableNode).find('thead input[type="text"]').each(function() {
-        const columnIndex = Number(this.id.replace('filter-col', '')) - 1;
+        const fieldNumber = Number(this.id.replace('filter-col', ''));
+        const columnIndex = furnitureColumn(table, fieldNumber - 1).index();
         const label = this.placeholder;
         const select = document.createElement('select');
-        select.id = 'value-filter-col' + (columnIndex + 1);
+        select.id = 'value-filter-col' + fieldNumber;
         select.className = 'column-value-filter';
         select.setAttribute('aria-label', label + 'の値で絞り込み');
         select.title = label + 'の値で絞り込み（検索と併用できます）';
         this.setAttribute('aria-label', label + 'を検索');
+        const heading = document.createElement('span');
+        heading.className = 'column-title';
+        heading.textContent = label === '名称' ? '日本語名' : label;
+        this.parentNode.insertBefore(heading, this);
+        this.placeholder = '検索';
         this.insertAdjacentElement('afterend', select);
         $(select).on('click keydown', function(event) {
             event.stopPropagation();

@@ -317,3 +317,137 @@ p {
 .dataTables_filter {
     display: none;
 }
+
+.state-panel {
+    border: 1px solid #aebccb;
+    border-radius: 6px;
+    background: #f6f9fc;
+    padding: 12px;
+    margin: 12px 0;
+    max-width: 1000px;
+}
+.state-panel h3 { margin: 0 0 10px; }
+.state-controls, .state-auto {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 8px;
+    margin: 8px 0;
+}
+.state-controls input { width: 240px; }
+.state-controls select { max-width: 440px; min-width: 220px; }
+.state-panel button, .state-panel input, .state-panel select, #state-format { padding: 5px 8px; }
+.state-panel button:disabled { opacity: .55; cursor: default; }
+.state-auto { border-top: 1px solid #cbd5df; padding-top: 10px; }
+#state-message, #transfer-message { white-space: pre-wrap; overflow-wrap: anywhere; max-width: 1000px; }
+.state-error { color: #b42318; font-weight: bold; }
+.state-confirm { max-width: min(500px, 85vw); border: 1px solid #888; border-radius: 8px; padding: 20px; }
+.state-confirm::backdrop { background: rgb(0 0 0 / 35%); }
+.state-confirm button { margin: 4px 8px 4px 0; }
+.filter-english-name { width: 230px; }
+#english-name-status { font-size: .9em; max-width: 1000px; }
+
+/* 家具登録はページを横に動かさず、一覧の中で見比べられるようにする。 */
+body.room-page {
+    width: calc(100% - 32px);
+    max-width: 1680px;
+    margin: 0 auto;
+    color: #24352f;
+    background: #fafbf9;
+    font: 14px/1.5 system-ui, -apple-system, "Segoe UI", sans-serif;
+}
+.room-page h1 { font-size: 24px; margin: 22px 0 14px; }
+.room-page button, .room-page input, .room-page select { font: inherit; }
+.room-page button, .room-page select, .room-page input:not([type="checkbox"]):not([type="radio"]) {
+    box-sizing: border-box;
+    border: 1px solid #bdcac3;
+    border-radius: 5px;
+    padding: 6px 9px;
+    background: #fff;
+    color: #24352f;
+}
+.room-page button { cursor: pointer; }
+.room-page button:hover:not(:disabled) { background: #edf4ef; border-color: #658c76; }
+.room-page :focus-visible { outline: 2px solid #28724c; outline-offset: 2px; }
+.room-page .selection-container { margin: 0 0 10px; }
+.room-page #selectedCharDisplay { margin-left: 8px; }
+.room-page .calculation-toolbar { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; margin-bottom: 20px; }
+.room-page .calculation-toolbar .my-button1 { margin: 0; padding: 8px 14px; font-size: 14px; }
+.room-page .calculation-toolbar button[onclick^="calcstart"] { background: #286849; color: white; border-color: #286849; }
+.room-page .calculation-toolbar button[onclick^="calcstart"]:hover { background: #20583d; }
+.room-page .bottom { width: 100%; }
+.room-page .bottom > div:first-child { display: flex; flex-wrap: wrap; border-bottom: 1px solid #cbd7ce; gap: 4px; }
+.room-page .tab { padding: 10px 16px; background: transparent; border-bottom: 3px solid transparent; }
+.room-page .tab.active { color: #215e40; background: #edf4ed; border-bottom-color: #286849; font-weight: 700; }
+.room-page .tabContent.active { min-width: 0; background: transparent; }
+.room-page .marginmid { width: 100%; min-width: 0; box-sizing: border-box; padding-top: 4px; }
+.room-page .state-panel { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 20px; max-width: none; padding: 12px 16px; margin: 14px 0 18px; border-color: #d4dfd6; background: #f0f5ef; }
+.room-page .state-auto { flex: 1; gap: 8px 12px; margin: 0; padding: 0; border: 0; }
+.room-page .state-auto strong { white-space: nowrap; font-size: 13px; }
+.room-page #autosave-status { color: #53665b; font-size: 12px; }
+.room-page #autosave-restore { font-size: 12px; padding: 4px 8px; }
+.room-page .state-manual summary { cursor: pointer; font-weight: 600; color: #215e40; padding: 4px 0; }
+.room-page .state-manual { flex-basis: 100%; }
+.room-page #autosave-status:empty { display: none; }
+.room-page .state-controls { margin: 12px 0; }
+.room-page .state-controls label { min-width: 6em; }
+.room-page .state-manual p { margin: 4px 0; font-size: 12px; color: #53665b; }
+.room-page #state-message { flex-basis: 100%; margin: 0; }
+.room-page #state-message:empty { display: none; }
+.room-page #state-new { background: #286849; color: white; border-color: #286849; }
+.room-page .inventory-toolbar, .room-page .inventory-actions { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; }
+.room-page .inventory-toolbar { justify-content: space-between; margin: 0 0 10px; }
+.room-page .inventory-toolbar h2 { font-size: 17px; margin: 0; }
+.room-page .inventory-actions { font-size: 13px; }
+.room-page .inventory-actions .set_val { width: 60px; margin: 0; }
+.room-page .toolbar-divider { height: 22px; border-left: 1px solid #d4dfd6; margin: 0 4px; }
+/* 固定列の重なり順を表内に閉じ込め、キャラクター選択画面を覆わないようにする。 */
+.room-page .inventory-scroll { isolation: isolate; width: 100%; max-height: max(300px, calc(100dvh - 390px)); min-height: 240px; overflow: auto; border: 1px solid #cbd7ce; border-radius: 6px; background: white; }
+.room-page #myTable { width: 100% !important; margin: 0; font-size: 13px; border: 0; border-collapse: separate; border-spacing: 0; }
+.room-page #myTable th, .room-page #myTable td { box-sizing: border-box; padding: 7px 8px; border: 0; border-right: 1px solid #e0e7e1; border-bottom: 1px solid #e0e7e1; }
+.room-page #myTable th { position: sticky; top: 0; z-index: 3; min-width: 86px; background: #f1f5f1; vertical-align: top; }
+.room-page #myTable td { height: 43px; }
+.room-page #myTable .column-title { display: block; text-align: left; margin-bottom: 7px; font-size: 12px; color: #485e51; white-space: nowrap; }
+.room-page #myTable thead input[type="text"], .room-page #myTable .column-value-filter { width: 100%; min-width: 0; max-width: none; padding: 4px 6px; font-size: 12px; font-weight: normal; }
+.room-page #myTable .column-value-filter { margin-top: 5px; }
+/* 短い値の列は検索・選択欄も含めてコンパクトにする。 */
+.room-invite #myTable tr > :is(:nth-child(5), :nth-child(8), :nth-child(10), :nth-child(12)),
+.room-comfort #myTable tr > :nth-child(6) { min-width: 64px; width: 64px; max-width: 64px; padding-left: 4px; padding-right: 4px; }
+.room-invite #myTable thead tr > :is(:nth-child(5), :nth-child(8), :nth-child(10), :nth-child(12)) :is(input, select),
+.room-comfort #myTable thead tr > :nth-child(6) :is(input, select) { width: 55px; padding-left: 2px; padding-right: 2px; }
+.room-page #myTable tbody tr { background: #fff; }
+.room-page #myTable tbody tr:nth-child(even) { background: #f8faf7; }
+.room-page #myTable tbody tr:hover { background: #edf5ec; }
+.room-page #myTable input[type="number"] { width: 58px; padding: 4px 6px; }
+.room-page #myTable input[type="checkbox"] { width: 17px; height: 17px; accent-color: #286849; vertical-align: middle; }
+.room-comfort #myTable th label { display: block; text-align: left; font-size: 12px; font-weight: normal; line-height: 23px; }
+.room-invite #myTable tr > :nth-child(3), .room-comfort #myTable tr > :nth-child(4) { min-width: 220px; width: 220px; text-align: left; white-space: normal; }
+.room-invite #myTable tr > :nth-child(4), .room-comfort #myTable tr > :nth-child(5) { min-width: 220px; width: 220px; text-align: left; white-space: normal; }
+.room-invite #myTable tbody tr > :nth-child(4), .room-comfort #myTable tbody tr > :nth-child(5) { color: #596960; }
+.room-invite #myTable tr > :nth-child(13), .room-comfort #myTable tr > :nth-child(18) { min-width: 170px; width: 180px; white-space: normal; }
+.room-page #english-name-status { font-size: 12px; color: #68776d; margin: 8px 0 20px; max-width: none; }
+.room-page #english-name-status:empty { display: none; }
+.room-page textarea { max-width: 100%; box-sizing: border-box; }
+.room-page .horizontalContainer { flex-wrap: wrap; gap: 16px; }
+@media (min-width: 701px) {
+    .room-invite #myTable tr > :nth-child(2) { position: sticky; left: 0; min-width: 86px; width: 86px; }
+    .room-comfort #myTable tr > :nth-child(1) { position: sticky; left: 0; min-width: 112px; width: 112px; }
+    .room-comfort #myTable tr > :nth-child(2) { position: sticky; left: 112px; min-width: 112px; width: 112px; }
+    .room-invite #myTable tr > :nth-child(3) { position: sticky; left: 86px; }
+    .room-comfort #myTable tr > :nth-child(4) { position: sticky; left: 224px; }
+    .room-invite #myTable tbody tr > :nth-child(2), .room-invite #myTable tbody tr > :nth-child(3),
+    .room-comfort #myTable tbody tr > :nth-child(1), .room-comfort #myTable tbody tr > :nth-child(2), .room-comfort #myTable tbody tr > :nth-child(4) { z-index: 1; background: inherit; }
+    .room-invite #myTable thead tr > :nth-child(2), .room-invite #myTable thead tr > :nth-child(3),
+    .room-comfort #myTable thead tr > :nth-child(1), .room-comfort #myTable thead tr > :nth-child(2), .room-comfort #myTable thead tr > :nth-child(4) { z-index: 4; }
+}
+@media (max-width: 700px) {
+    body.room-page { width: calc(100% - 20px); }
+    .room-page h1 { font-size: 21px; margin-top: 16px; }
+    .room-page .tab { padding: 9px 10px; font-size: 13px; }
+    .room-page .state-panel { padding: 10px 12px; }
+    .room-page .state-auto { flex-basis: 100%; }
+    .room-page .state-controls input, .room-page .state-controls select { min-width: 0; width: 100%; max-width: 100%; }
+    .room-page .inventory-toolbar { align-items: flex-start; gap: 10px; }
+    .room-page .inventory-scroll { max-height: 60vh; }
+    .room-page .calculation-toolbar { margin-bottom: 14px; }
+}

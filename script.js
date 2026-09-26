@@ -22,6 +22,7 @@ Math.random.seed = (function me (s) {
 var selectedRows = {}; // 選択された行の状態を保存するためのオブジェクトを定義する
 var table = null; // 初期化
 var valueFilters = null;
+var stateManager = null;
 var furnitures = [];
 const series_bonus = new Map();
 var max_furniture_num = new Map();
@@ -84,7 +85,7 @@ $(document).ready(function() {
       });
 	$("#btn-check").click(function(){
 		var lines = Array.from(new Set($("#text-area").val().split("\n"))); // テキストエリアの値を1行ずつ取得
-		var checkboxes = $("input[type='checkbox']"); // 全てのチェックボックスを取得
+		var checkboxes = $(table.rows().nodes()).find("input[name='select[]']");
 		$.each(checkboxes, function(index, checkbox){ // 各チェックボックスに対して処理を行う
 			var value = $(checkbox).attr("id"); // チェックボックスの名前を取得
 			if(lines.includes(value)){ // テキストエリアの行に名前が含まれている場合
@@ -93,75 +94,18 @@ $(document).ready(function() {
 			}
 		});
 		$("#text-area").val(lines.join("\n")); // テキストエリアに残った行を再度設定する
+        if (stateManager) stateManager.changed();
 	});
-	$("#btn-stats-out").click(function(){
-		resetFilter();
-		// チェックボックスの状態を取得
-		const checkboxes = document.querySelectorAll('input[type="checkbox"]');
-		var lines = [];
-		lines.push(seed);
-		lines.push(Date.now());
-		lines.push(document.getElementById('rankInput').value);
-		lines.push(document.querySelector('input[name="proctype"]:checked').value);
-		lines.push(document.getElementById("trynum").value);
-		
-		var last_checked = null;
-		var stats_all = '';
-		$.each(checkboxes, function(index, checkbox){ // 各チェックボックスに対して処理を行う
-			var cid = $(checkbox).attr("id"); // チェックボックスの名前を取得
-			if (cid != 'select-all' && 
-				cid != 'filter-all-select' && 
-				cid != 'filter-all-nonselect' && 
-				cid != 'filter-must-select' && 
-				cid != 'filter-must-nonselect') {
-				if (cid.match(/must/)){
-					stats_all += (last_checked + '' + checkbox.checked).replaceAll('true','1').replaceAll('false','0');
-				}
-				last_checked = checkbox.checked;
-			}
-		});
-		lines.push(stats_all);
-		$("#text-stats").val(lines.join("\n")); // テキストエリアに設定内容を出力する
-	});	
-	$("#btn-stats-save").click(function(){
-		resetFilter();
-		var lines = $("#text-stats").val().split("\n"); // テキストエリアの値を1行ずつ取得
-		$("#rankInput").val(lines[2]);
-		var radios = document.getElementsByName("proctype");
-		if (lines[3] == '0'){radios[0].checked = true;}
-		if (lines[3] == '1'){radios[1].checked = true;}
-		if (lines[3] == '2'){radios[2].checked = true;}
-		$("#trynum").val(lines[4]);
-		var checkboxes = $("input[type='checkbox']"); // 全てのチェックボックスを取得
-		$.each(checkboxes, function(index, checkbox){ // 各チェックボックスに対して処理を行う
-			var check_id = $(checkbox).attr("id"); // チェックボックスの名前を取得
-			var check_value = parseInt($(checkbox).attr("value"),10);
-			if (check_id.match(/must/)){
-				$(checkbox).prop("checked", lines[5][2*check_value+1]=='1'); // チェックボックスをオンにする
-			} else {
-				$(checkbox).prop("checked", lines[5][2*check_value]=='1'); // チェックボックスをオンにする
-			}
-		});
-		const balloon = document.createElement("div");
-		balloon.className = "balloon";
-		balloon.textContent = "復元しました";
-		document.getElementById("btn-stats-save").parentNode.appendChild(balloon);
-
-		const buttonRect = document.getElementById("btn-stats-save").getBoundingClientRect();
-		const balloonRect = balloon.getBoundingClientRect();
-		const balloonTop =
-		  buttonRect.top +
-		  buttonRect.height / 2 -
-		  balloonRect.height / 2;
-		const balloonLeft = buttonRect.right + 8;
-
-		balloon.style.top = `${balloonTop}px`;
-		balloon.style.left = `${balloonLeft}px`;
-
-		setTimeout(() => {
-		  balloon.parentNode.removeChild(balloon);
-		}, 1000);
-	});	
+    $("#btn-stats-out").click(function () {
+        if (!stateManager) return;
+        if (document.getElementById('state-format').value === 'named') stateManager.exportNamed();
+        else stateManager.exportLegacy(seed, resetFilter);
+    });
+    $("#btn-stats-save").click(function () {
+        if (!stateManager) return;
+        if (document.getElementById('state-format').value === 'named') stateManager.importNamed();
+        else stateManager.importLegacy(resetFilter);
+    });
 	$.ajax({
 		type: "GET",
 		url: "series.csv",
@@ -182,7 +126,7 @@ $(document).ready(function() {
 			}
 		}
 	});
-	$.ajax({
+	const rankRequest = $.ajax({
 		type: "GET",
 		url: "roomrank.csv",
 		dataType: "text",
@@ -206,7 +150,7 @@ $(document).ready(function() {
 			numberInput.value = max_room_rank;
 		}
 	});
-	$.ajax({
+	const furnitureRequest = $.ajax({
         type: "GET",
         url: "data.csv",
         dataType: "text",
@@ -218,9 +162,10 @@ $(document).ready(function() {
                 "searching": true,
                 "info": true,
                 "autoWidth": false,
+                "columns": [0, 1, 2, 3, 17, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16].map(function (index) { return { data: index }; }),
 				"columnDefs": [
-					{ "targets": [2, 6, 7, 8, 9, 10, 11, 12], "className": "hidden" },
-					{ "orderable": false, "targets": [0,1,3,4,5,13,14,15,16] }
+					{ "targets": [2, 7, 8, 9, 10, 11, 12, 13], "className": "hidden" },
+					{ "orderable": false, "targets": "_all" }
 				]				
             });
 			$('#myTable thead th input[type="text"]').on('click', function(e) {
@@ -234,7 +179,7 @@ $(document).ready(function() {
                     var mustcheckbox = "<td><input type='checkbox' id = 'must" + row_data[1] + "' name='mustselect[]' class='check' value='" + i + "'></td>";
                     row_data.unshift(mustcheckbox);
                     row_data.unshift(checkbox);
-                    table.row.add(row_data);
+                    table.row.add(row_data.slice(0, 17).concat('')); // 英語名は別辞書で補完
                     // 選択された行の状態を保存する
                     if (selectedRows[i]) {
                         table.row(i).select();
@@ -264,11 +209,18 @@ $(document).ready(function() {
 			  // 全選択のチェックボックスをクリックした時の処理を追加する
 			$("#select-all").click(function () {
 				$("input[name='select[]']").prop("checked", this.checked);
+                if (stateManager) stateManager.changed();
 			});
             table.draw();
-			restoreCheckboxState();
+
             valueFilters = initializeTableValueFilters(table);
+            initializeFurnitureNames(table, 3, 17);
         }
+    });
+    $.when(rankRequest, furnitureRequest).done(function () {
+        stateManager = RoomState.initialize({ mode: 'comfort', table: table });
+    }).fail(function () {
+        document.getElementById('autosave-status').textContent = 'データを読み込めないため自動保存を開始できません。再読み込みしてください。';
     });
 	const tabs = document.querySelectorAll(".tab");
 	const tabContents = document.querySelectorAll(".tabContent");
@@ -320,53 +272,53 @@ $(document).ready(function() {
         table.draw();
     });
     $('#filter-col4').on('keyup change', function() {
-        table.column(3).search(this.value).draw();
+        furnitureColumn(table, 3).search(this.value).draw();
     });
 	$('#filter-col5').on('keyup change', function() {
 		var searchTerm = this.value;
 		if (searchTerm) {
 			// Add `^` and `$` to enforce exact match
-			table.column(4).search('^' + searchTerm + '$', true, false).draw();
+			furnitureColumn(table, 4).search('^' + searchTerm + '$', true, false).draw();
 		} else {
 			// If the search term is empty, clear the filter
-			table.column(4).search('').draw();
+			furnitureColumn(table, 4).search('').draw();
 		}
 	});
     $('#filter-col6').on('keyup change', function() {
-        table.column(5).search(this.value).draw();
+        furnitureColumn(table, 5).search(this.value).draw();
     });
     $('#filter-col7').on('keyup change', function() {
-        table.column(6).search(this.value).draw();
+        furnitureColumn(table, 6).search(this.value).draw();
     });
     $('#filter-col8').on('keyup change', function() {
-        table.column(7).search(this.value).draw();
+        furnitureColumn(table, 7).search(this.value).draw();
     });
     $('#filter-col9').on('keyup change', function() {
-        table.column(8).search(this.value).draw();
+        furnitureColumn(table, 8).search(this.value).draw();
     });
     $('#filter-col10').on('keyup change', function() {
-        table.column(9).search(this.value).draw();
+        furnitureColumn(table, 9).search(this.value).draw();
     });
     $('#filter-col11').on('keyup change', function() {
-        table.column(10).search(this.value).draw();
+        furnitureColumn(table, 10).search(this.value).draw();
     });
     $('#filter-col12').on('keyup change', function() {
-        table.column(11).search(this.value).draw();
+        furnitureColumn(table, 11).search(this.value).draw();
     });
     $('#filter-col13').on('keyup change', function() {
-        table.column(12).search(this.value).draw();
+        furnitureColumn(table, 12).search(this.value).draw();
     });
     $('#filter-col14').on('keyup change', function() {
-        table.column(13).search(this.value).draw();
+        furnitureColumn(table, 13).search(this.value).draw();
     });
     $('#filter-col15').on('keyup change', function() {
-        table.column(14).search(this.value).draw();
+        furnitureColumn(table, 14).search(this.value).draw();
     });
     $('#filter-col16').on('keyup change', function() {
-        table.column(15).search(this.value).draw();
+        furnitureColumn(table, 15).search(this.value).draw();
     });
     $('#filter-col17').on('keyup change', function() {
-        table.column(16).search(this.value).draw();
+        furnitureColumn(table, 16).search(this.value).draw();
     });
 	tabs.forEach((tab) => {
 		tab.addEventListener("click", () => {
@@ -740,47 +692,6 @@ function calculateAcceptanceProbability(currentCost, newCost, temperature) {
 	const delta = currentCost - newCost;
 	return Math.exp(-delta / temperature);
 }
-function saveCheckboxState() {
-	// チェックボックスの状態を取得してキャッシュに保存
-	const checkboxes = document.querySelectorAll('input[type="checkbox"]');
-	for (let i = 0; i < checkboxes.length; i++) {
-	  localStorage.setItem(checkboxes[i].id, checkboxes[i].checked);
-	}
-	const copyButton = document.getElementById("checkcache");
-	const balloon = document.createElement("div");
-	balloon.className = "balloon";
-	balloon.textContent = "保存しました";
-	copyButton.parentNode.appendChild(balloon);
-
-	const buttonRect = copyButton.getBoundingClientRect();
-	const balloonRect = balloon.getBoundingClientRect();
-	const balloonTop =
-	buttonRect.top +
-	buttonRect.height / 2 -
-	balloonRect.height / 2;
-	const balloonLeft = buttonRect.right + 8;
-
-	balloon.style.top = `${balloonTop}px`;
-	balloon.style.left = `${balloonLeft}px`;
-
-	setTimeout(() => {
-	balloon.parentNode.removeChild(balloon);
-	}, 1000);
-  }
-
-  function restoreCheckboxState() {
-	// キャッシュからチェックボックスの状態を取得して復元
-	const checkboxes = document.querySelectorAll('input[type="checkbox"]');
-	for (let i = 0; i < checkboxes.length; i++) {
-	  let cid = checkboxes[i].id;
-	  cid = cid.replace('二人掛けソファ','二人掛けのソファ');
-	  cid = cid.replace('体育館の前景','体育館の全景');
-	  cid = cid.replace('ベーシックな','ベーシックなな');
-	  cid = cid.replace('オンボロ風の小さい机','オンボロ風の小さな机');
-	  checkboxes[i].checked = (localStorage.getItem(cid) === 'true' || localStorage.getItem(checkboxes[i].id) === 'true');
-	}
-  }
-  
   function resetFilter() {
 	if (!table) return;
 	if (valueFilters) valueFilters.reset();
@@ -791,14 +702,13 @@ function saveCheckboxState() {
     $('#filter-all-nonselect').prop('checked', false);
     $('#filter-must-nonselect').prop('checked', false);
 
-	for (let i = 4; i <= 17; i++) {
+	for (let i = 4; i <= 18; i++) {
 		$('#filter-col'+i.toString()).val(''); // フィルター入力を空にする
-		table.column(i-1).search(''); // カラム4の検索条件をクリア
+		furnitureColumn(table, i-1).search(''); // カラム4の検索条件をクリア
 	}
 	table.draw();
   }
   window.onload = function() {
-	restoreCheckboxState();
 	// ボタンの要素を取得する
 	var button = document.querySelector('.scroll-to-top');
 	// ボタンをクリックしたら最上部にスクロールする
