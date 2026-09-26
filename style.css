@@ -34,6 +34,16 @@ body {
 	margin: 0;
 }
 
+.data-table .column-value-filter {
+	display: block;
+	width: 100%;
+	min-width: 5em;
+	max-width: 210px;
+	box-sizing: border-box;
+	margin-top: 5px;
+	padding: 3px;
+}
+
 .hidden {
 	display: none;
 }

@@ -21,6 +21,7 @@ Math.random.seed = (function me (s) {
 })(0);
 
 var table = null; // 初期化
+var valueFilters = null;
 var furnitures = [];
 var max_furniture_num = new Map();
 var max_floor_num = new Map();
@@ -186,6 +187,7 @@ $(document).ready(function() {
 		$.each(checkboxes, function(index, checkbox){ // 各チェックボックスに対して処理を行う
 			$(checkbox).val(parseInt(lines[8].substring(2*index,2*index+2)));
 		});
+		table.draw();
 		const balloon = document.createElement("div");
 		balloon.className = "balloon";
 		balloon.textContent = "復元しました";
@@ -286,14 +288,16 @@ $(document).ready(function() {
 
             table.draw();
 			restoreInputState();
+            valueFilters = initializeTableValueFilters(table);
         }
     });
 	const tabs = document.querySelectorAll(".tab");
 	const tabContents = document.querySelectorAll(".tabContent");
 	$.fn.dataTable.ext.search.push(
 		function(settings, data, dataIndex) {
+			if (!table || settings.nTable !== table.table().node()) return true;
 			var filterValue = $('#filter-col2').val(); // フィルタのテキストフィールドの値
-			var columnValue = $('#max_num' + dataIndex).val(); // max_numXの値を取得
+			var columnValue = $(table.row(dataIndex).node()).find('input[name="max_num"]').val();
 	
 			// フィルタが空なら全て表示、値が含まれていればその行を表示
 			if (filterValue === '' || columnValue==filterValue) {
@@ -1922,6 +1926,7 @@ function saveInputState() {
 		}
 		numCell.val(newValue);
 	  });
+	  table.draw();
   }
   function restoreInputState() {
 	// キャッシュから数値入力フィールドの値を取得して復元
@@ -1935,8 +1940,11 @@ function saveInputState() {
   }
   
   function resetFilter() {
+	if (!table) return;
+	if (valueFilters) valueFilters.reset();
+	table.search('');
 
-	for (let i = 1; i <= 14; i++) {
+	for (let i = 1; i <= 15; i++) {
 		$('#filter-col'+i.toString()).val(''); // フィルター入力を空にする
 		table.column(i-1).search(''); // カラム4の検索条件をクリア
 	}

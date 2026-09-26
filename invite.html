@@ -19,6 +19,7 @@
 	<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 	<script type="text/javascript" src="https://cdn.datatables.net/1.10.19/js/jquery.dataTables.js"></script>
 	<link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.15.1/css/all.css">
+	<script src="table_value_filters.js"></script>
 	<script src="script_invite.js"></script>
 	<style>
 		.filter-col1 { width: 50px; }
@@ -165,6 +166,7 @@
 	<div>
 		<div class="tabContent active" data-tab="tab1Content">
 			<div class="marginmid">
+			<button type="button" onclick="resetFilter()">絞り込みを解除</button>
 			<table id="myTable" class="data-table">
 				<button id="checkcache" onclick="saveInputState()">個数をキャッシュに保存</button>
 				<input type="number" class="set_val" id="set_val" name="set_val" value="0" min="0" max="99">

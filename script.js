@@ -21,6 +21,7 @@ Math.random.seed = (function me (s) {
 })(0);
 var selectedRows = {}; // 選択された行の状態を保存するためのオブジェクトを定義する
 var table = null; // 初期化
+var valueFilters = null;
 var furnitures = [];
 const series_bonus = new Map();
 var max_furniture_num = new Map();
@@ -266,6 +267,7 @@ $(document).ready(function() {
 			});
             table.draw();
 			restoreCheckboxState();
+            valueFilters = initializeTableValueFilters(table);
         }
     });
 	const tabs = document.querySelectorAll(".tab");
@@ -780,6 +782,9 @@ function saveCheckboxState() {
   }
   
   function resetFilter() {
+	if (!table) return;
+	if (valueFilters) valueFilters.reset();
+	table.search('');
 
     $('#filter-all-select').prop('checked', false);
     $('#filter-must-select').prop('checked', false);

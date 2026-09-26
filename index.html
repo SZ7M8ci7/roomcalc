@@ -18,6 +18,7 @@
 	<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 	<script type="text/javascript" src="https://cdn.datatables.net/1.10.19/js/jquery.dataTables.js"></script>
 	<link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.15.1/css/all.css">
+	<script src="table_value_filters.js"></script>
 	<script src="script.js"></script>
 	<style>
 		/* 1列目と2列目の幅を固定 */
@@ -68,6 +69,7 @@
 	<div>
 		<div class="tabContent active" data-tab="tab1Content">
 			<div class="marginmid">
+			<button type="button" onclick="resetFilter()">絞り込みを解除</button>
 			<table id="myTable" class="data-table">
 				<button id="checkcache" onclick="saveCheckboxState()">チェック状況をキャッシュに保存</button>
 				<thead>
