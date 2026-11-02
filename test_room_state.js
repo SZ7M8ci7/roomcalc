@@ -1,5 +1,7 @@
 const { test } = require('node:test');
 const assert = require('node:assert/strict');
+const fs = require('node:fs');
+const vm = require('node:vm');
 const { parseNamed, formatNamed, createStore, validateState } = require('./room_state');
 
 const records = [
@@ -144,3 +146,85 @@ test('corruption in an older autosave stops writes without discarding history', 
     assert.throws(() => store.saveAuto(state('invite', '3')));
     assert.equal(storage.getItem('room-state:v1:invite:auto'), before);
 });
+
+// Exercise the actual initialization/restoration path with a small DOM/table adapter.
+function initializeInventory(mode, storage, populated = false) {
+    const rows = ['壁', '追加家具'].map((name, i) => {
+        const input = { id: mode === 'invite' ? 'max_num' + i : name,
+            dataset: {}, value: populated ? '10' : '0', max: '40', checked: populated };
+        const mustInput = { id: 'must' + name, checked: populated };
+        return { dataset: {}, input, mustInput,
+            data: mode === 'invite' ? [i, null, name] : [null, null, i, name],
+            querySelector(selector) { return selector.includes('mustselect') ? mustInput : input; } };
+    });
+    const elements = new Map();
+    const el = id => {
+        if (!elements.has(id)) elements.set(id, { value: '', textContent: '',
+            classList: { add() {}, remove() {}, toggle() {} },
+            addEventListener() {}, replaceChildren() {}, add() {} });
+        return elements.get(id);
+    };
+    const context = vm.createContext({
+        document: { getElementById: el, addEventListener() {},
+            querySelector() { return { value: '3' }; }, querySelectorAll() { return []; } },
+        window: { localStorage: storage, addEventListener() {} },
+        Option: function () {}
+    });
+    vm.runInContext(fs.readFileSync(require.resolve('./room_state'), 'utf8'), context);
+    const table = {
+        rows() { return { nodes() { return { toArray() { return rows; } }; } }; },
+        row(node) { return { data() { return node.data; } }; }, draw() {}
+    };
+    const manager = context.RoomState.initialize({ mode, table,
+        getCustom() { return []; }, setCustom() {} });
+    assert.doesNotMatch(el('autosave-status').textContent, /停止/);
+    return { manager, rows };
+}
+
+function assertInventoryRestored(mode, manager) {
+    const [existing, added] = manager.capture().inventory;
+    if (mode === 'invite') {
+        assert.equal(existing.quantity, '2');
+        assert.equal(added.quantity, '0');
+    } else {
+        assert.equal(existing.owned, true);
+        assert.equal(existing.must, true);
+        assert.equal(added.owned, false);
+        assert.equal(added.must, false);
+    }
+}
+
+for (const mode of ['invite', 'comfort']) {
+    test(mode + ': autosave restoration clears new furniture and preserves saved settings', () => {
+        const storage = memory(), saved = state(mode);
+        saved.inventory[0].must = true;
+        createStore(storage, mode).saveAuto(saved);
+        const { manager } = initializeInventory(mode, storage, true);
+        assertInventoryRestored(mode, manager);
+        assert.equal(manager.capture().settings.rankInput, '40');
+    });
+
+    test(mode + ': restoring an older manual slot clears furniture selected since that save', () => {
+        const storage = memory(), saved = state(mode);
+        saved.inventory[0].must = true;
+        const slot = createStore(storage, mode).manual(null, '家具追加前', saved);
+        const { manager, rows } = initializeInventory(mode, storage);
+        rows[1].input.value = '7';
+        rows[1].input.checked = rows[1].mustInput.checked = true;
+        assert.equal(manager.apply(slot.state), 0);
+        assertInventoryRestored(mode, manager);
+    });
+
+    test(mode + ': legacy migration preserves existing furniture and leaves new furniture unset', () => {
+        const storage = memory();
+        if (mode === 'invite') storage.setItem('max_num0', '2');
+        else { storage.setItem('壁', 'true'); storage.setItem('must壁', 'true'); }
+        const { manager } = initializeInventory(mode, storage);
+        assertInventoryRestored(mode, manager);
+        const store = createStore(storage, mode);
+        assert.equal(store.slots()[0].name, '以前のキャッシュ');
+        const added = store.auto().state.inventory[1];
+        if (mode === 'invite') assert.equal(added.quantity, '0');
+        else { assert.equal(added.owned, false); assert.equal(added.must, false); }
+    });
+}

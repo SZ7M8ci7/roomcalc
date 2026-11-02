@@ -218,7 +218,12 @@
                 let restored = 0;
                 records().forEach(r => {
                     const value = saved.get(r.key);
-                    if (!value) return;
+                    // Furniture added after this save must not inherit current UI values.
+                    if (!value) {
+                        if (mode === 'invite') r.input.value = '0';
+                        else { r.input.checked = false; r.mustInput.checked = false; }
+                        return;
+                    }
                     if (mode === 'invite') r.input.value = value.quantity;
                     else { r.input.checked = value.owned; r.mustInput.checked = value.must; }
                     restored++;

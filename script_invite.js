@@ -201,7 +201,7 @@ $(document).ready(function() {
 					furnitures.push(row_data)
 					var add_data = [];
 					add_data.push(row_data[0]);
-					var max_num = "<td><input type='number' class='have_val' id = 'max_num" + row_data[0] + "' name='max_num' value='" + row_data[15] + "'min='0' max='" + row_data[15] + "'></td>";
+					var max_num = "<td><input type='number' class='have_val' id = 'max_num" + row_data[0] + "' name='max_num' value='0' min='0' max='" + row_data[15] + "'></td>";
 					add_data.push(max_num);
 					add_data.push(row_data[1]);
 					add_data.push(row_data[2]);
