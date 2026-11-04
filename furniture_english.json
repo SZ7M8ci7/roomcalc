@@ -140,6 +140,11 @@
       "source_url": "https://twistedwonderland.wiki.gg/wiki/Winter_Holiday_Campaign/Furniture",
       "wiki_id": "2013006"
     },
+    "くつろぎマイルーム（アズール）": {
+      "english": "Cozy Loungewear (Azul)",
+      "source_url": "https://twistedwonderland.wiki.gg/wiki/Azul_Birthday_Campaign/Furniture",
+      "wiki_id": "5131035"
+    },
     "くつろぎマイルーム（イデア）": {
       "english": "Cozy Loungewear (Idia)",
       "source_url": "https://twistedwonderland.wiki.gg/wiki/Idia_Birthday_Campaign/Furniture",
@@ -329,6 +334,11 @@
       "english": "Picture Chosen By Azul",
       "source_url": "https://twistedwonderland.wiki.gg/wiki/Azul_Birthday_Campaign/Furniture",
       "wiki_id": "2010012"
+    },
+    "アズールのくつろぎスペース": {
+      "english": "Azul's Cozy Space",
+      "source_url": "https://twistedwonderland.wiki.gg/wiki/Azul_Birthday_Campaign/Furniture",
+      "wiki_id": "2030012"
     },
     "アズールのショルダーケース（クラブ）": {
       "english": "Azul's Shoulder Case (Club)",
@@ -962,7 +972,7 @@
     },
     "エースのスポーツバッグ（クラブ）": {
       "english": "Ace's Sports Bag (Club)",
-      "source_url": "https://twistedwonderland.wiki.gg/wiki/Event_Furniture",
+      "source_url": "https://twistedwonderland.wiki.gg/wiki/Basketball_Club_Medal_Shop/Furniture",
       "wiki_id": "2000090"
     },
     "エースのツム": {
@@ -970,9 +980,14 @@
       "source_url": "https://twistedwonderland.wiki.gg/wiki/Ace_Trappola/Cards/R_Tsumsitter",
       "wiki_id": "2023007"
     },
+    "エースのバスケットゴール（クラブ）": {
+      "english": "Ace's Basketball Hoop (Club)",
+      "source_url": "https://twistedwonderland.wiki.gg/wiki/Basketball_Club_Medal_Shop/Furniture",
+      "wiki_id": "2000088"
+    },
     "エースのフレーム（クラブ）": {
       "english": "Ace's Frame (Club)",
-      "source_url": "https://twistedwonderland.wiki.gg/wiki/Event_Furniture",
+      "source_url": "https://twistedwonderland.wiki.gg/wiki/Basketball_Club_Medal_Shop/Furniture",
       "wiki_id": "2000089"
     },
     "オウムのぬいぐるみ": {
@@ -2625,10 +2640,25 @@
       "source_url": "https://twistedwonderland.wiki.gg/wiki/Jamil_Birthday_Campaign/Furniture",
       "wiki_id": "2030001"
     },
+    "ジャミルのスポーツバッグ（クラブ）": {
+      "english": "Jamil's Sports Bag (Club)",
+      "source_url": "https://twistedwonderland.wiki.gg/wiki/Basketball_Club_Medal_Shop/Furniture",
+      "wiki_id": "2000093"
+    },
     "ジャミルのツム": {
       "english": "Jamil's Tsum",
       "source_url": "https://twistedwonderland.wiki.gg/wiki/Jamil_Viper/Cards/R_Tsumsitter",
       "wiki_id": "2023008"
+    },
+    "ジャミルのバスケットゴール（クラブ）": {
+      "english": "Jamil's Basketball Hoop (Club)",
+      "source_url": "https://twistedwonderland.wiki.gg/wiki/Basketball_Club_Medal_Shop/Furniture",
+      "wiki_id": "2000091"
+    },
+    "ジャミルのフレーム（クラブ）": {
+      "english": "Jamil's Frame (Club)",
+      "source_url": "https://twistedwonderland.wiki.gg/wiki/Basketball_Club_Medal_Shop/Furniture",
+      "wiki_id": "2000092"
     },
     "ジャミルのフレーム（ニューイヤー）": {
       "english": "Jamil's Frame (New Year)",
@@ -3939,6 +3969,11 @@
       "english": "Floyd's Cozy Space",
       "source_url": "https://twistedwonderland.wiki.gg/wiki/Jade_%26_Floyd_Birthday_Campaign/Furniture",
       "wiki_id": "2030006"
+    },
+    "フロイドのスポーツバッグ（クラブ）": {
+      "english": "Floyd's Sports Bag (Club)",
+      "source_url": "https://twistedwonderland.wiki.gg/wiki/Basketball_Club_Medal_Shop/Furniture",
+      "wiki_id": "2000096"
     },
     "フロイドのフレーム（ニューイヤー）": {
       "english": "Floyd's Frame (New Year)",
